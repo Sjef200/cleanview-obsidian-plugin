@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<title>Puls — grafkontroll</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+  /* Stand-ins for the Obsidian theme variables the plugin inherits. */
+  body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+  .pane {
+    padding: 24px; display: grid; gap: 28px;
+    grid-template-columns: 480px 300px;
+    --font-ui-medium: 15px; --font-ui-small: 13px; --font-ui-smaller: 12px;
+    --font-interface: system-ui, sans-serif;
+    --radius-s: 4px; --radius-m: 8px;
+    --shadow-s: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .theme-light .pane {
+    --background-primary: #ffffff; --background-primary-alt: #f8f8f7;
+    --background-secondary: #f2f3f5; --background-modifier-border: #e0e0e0;
+    --background-modifier-hover: rgba(0,0,0,.05);
+    --text-normal: #222222; --text-muted: #6e6e6e; --text-faint: #999999;
+    --text-accent: #705dcf;
+    background: #ffffff; color: #222;
+  }
+  .theme-dark .pane {
+    --background-primary: #1e1e1e; --background-primary-alt: #161616;
+    --background-secondary: #262626; --background-modifier-border: #333333;
+    --background-modifier-hover: rgba(255,255,255,.07);
+    --text-normal: #dcddde; --text-muted: #999999; --text-faint: #6e6e6e;
+    --text-accent: #a68cf5;
+    background: #1e1e1e; color: #dcddde;
+  }
+  h2 { grid-column: 1 / -1; margin: 0; font-size: 13px; text-transform: uppercase;
+       letter-spacing: .08em; opacity: .5; }
+  .cell { min-width: 0; }
+  .cell > h3 { margin: 0 0 8px; font-size: 13px; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<div class="theme-light">
+  <div class="pane">
+    <h2>Lyst tema</h2>
+    <div class="cell puls-block"><h3>Åpne oppgaver per mappe</h3><div id="light-bar" class="puls-chart"></div></div>
+    <div class="cell puls-block"><h3>Smal kolonne (260px)</h3><div id="light-narrow" class="puls-chart"></div></div>
+    <div class="cell puls-block"><h3>Fullført per dag</h3><div id="light-line" class="puls-chart"></div></div>
+    <div class="cell puls-block"><h3>Etter prioritet</h3><div id="light-donut" class="puls-chart"></div></div>
+    <div class="cell puls-block" style="grid-column: 1 / -1"><h3>Nedtelling til mål</h3><div id="light-countdown"></div></div>
+  </div>
+</div>
+
+<div class="theme-dark">
+  <div class="pane">
+    <h2>Mørkt tema</h2>
+    <div class="cell puls-block"><h3>Åpne oppgaver per mappe</h3><div id="dark-bar" class="puls-chart"></div></div>
+    <div class="cell puls-block"><h3>Smal kolonne (260px)</h3><div id="dark-narrow" class="puls-chart"></div></div>
+    <div class="cell puls-block"><h3>Fullført per dag</h3><div id="dark-line" class="puls-chart"></div></div>
+    <div class="cell puls-block"><h3>Etter prioritet</h3><div id="dark-donut" class="puls-chart"></div></div>
+    <div class="cell puls-block" style="grid-column: 1 / -1"><h3>Nedtelling til mål</h3><div id="dark-countdown"></div></div>
+  </div>
+</div>
+
+<script type="module" src="./bundle.js"></script>
+</body>
+</html>

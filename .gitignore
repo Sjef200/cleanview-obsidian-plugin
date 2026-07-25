@@ -1,0 +1,10 @@
+node_modules/
+
+# Build output. Produced by `npm run build`, attached to GitHub releases by CI.
+main.js
+main.js.map
+preview/bundle.js
+
+*.tsbuildinfo
+.DS_Store
+.test-build.mjs
