@@ -36,6 +36,6 @@ export function renderStat(
 		const track = card.createDiv({ cls: "puls-progress" });
 		const bar = track.createDiv({ cls: "puls-progress-bar" });
 		bar.style.setProperty("--puls-progress", `${percent}%`);
-		card.createDiv({ cls: "puls-stat-goal", text: `${percent} % av ${formatNumber(goal)}` });
+		card.createDiv({ cls: "puls-stat-goal", text: `${percent}% of ${formatNumber(goal)}` });
 	}
 }

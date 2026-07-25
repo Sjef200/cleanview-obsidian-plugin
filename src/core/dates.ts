@@ -5,6 +5,10 @@
  * local calendar date sounds wrong, but it is deliberate: it makes the mapping
  * date <-> integer exact and DST-proof, and every date we handle comes from
  * text like "2026-07-11" that has no timezone to begin with.
+ *
+ * All formatting goes through `Intl` with the runtime's own locale rather than
+ * hardcoded month and weekday names, so dates read correctly for every user
+ * without the plugin shipping a translation table.
  */
 
 const MS_PER_DAY = 86_400_000;
@@ -49,52 +53,45 @@ export function formatISO(dayNum: number): string {
 	return `${d.getUTCFullYear()}-${month}-${day}`;
 }
 
-const WEEKDAYS_NB = ["søndag", "mandag", "tirsdag", "onsdag", "torsdag", "fredag", "lørdag"];
-const MONTHS_NB = [
-	"januar", "februar", "mars", "april", "mai", "juni",
-	"juli", "august", "september", "oktober", "november", "desember",
-];
+/**
+ * Formatters are created once. Constructing an `Intl` formatter is expensive
+ * enough that doing it per row shows up in a table of a few hundred dates.
+ *
+ * `timeZone: "UTC"` is required, not cosmetic: day numbers are UTC-anchored, so
+ * formatting them in local time would shift the date a day west of Greenwich.
+ */
+const longDate = new Intl.DateTimeFormat(undefined, {
+	weekday: "long", day: "numeric", month: "long", year: "numeric", timeZone: "UTC",
+});
+const relative = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
 
-/** Norwegian long form, e.g. "lørdag 11. juli 2026". */
-export function formatLongNb(dayNum: number): string {
-	const d = new Date(dayNum * MS_PER_DAY);
-	const weekday = WEEKDAYS_NB[d.getUTCDay()];
-	return `${weekday} ${d.getUTCDate()}. ${MONTHS_NB[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
+/** Locale-aware long form, e.g. "Saturday 21 November 2026". */
+export function formatLong(dayNum: number): string {
+	return longDate.format(new Date(dayNum * MS_PER_DAY));
 }
 
-/** Short, human day label relative to today: "i dag", "i går", "om 3 dager", ... */
-export function formatRelativeNb(dayNum: number, from = today()): string {
+/** Short, human day label relative to today: "today", "yesterday", "in 3 days". */
+export function formatRelativeDay(dayNum: number, from = today()): string {
 	const diff = dayNum - from;
-	if (diff === 0) return "i dag";
-	if (diff === 1) return "i morgen";
-	if (diff === -1) return "i går";
-	if (diff === 2) return "i overmorgen";
-	if (diff > 0 && diff < 7) return `om ${diff} dager`;
-	if (diff < 0 && diff > -7) return `for ${-diff} dager siden`;
-	if (diff > 0) {
-		const weeks = Math.round(diff / 7);
-		if (weeks < 6) return `om ${weeks} uker`;
-	} else {
-		const weeks = Math.round(-diff / 7);
-		if (weeks < 6) return `for ${weeks} uker siden`;
-	}
+	if (Math.abs(diff) < 7) return relative.format(diff, "day");
+	if (Math.abs(diff) < 42) return relative.format(Math.round(diff / 7), "week");
+	// Beyond about six weeks a relative phrase stops being useful; show the date.
 	return formatISO(dayNum);
 }
 
 /** Relative label for a millisecond timestamp, including sub-day resolution. */
 export function formatRelativeMs(ms: number, now = Date.now()): string {
-	const diffMin = Math.round((now - ms) / 60_000);
-	if (diffMin < 1) return "nå nettopp";
-	if (diffMin < 60) return `${diffMin} min siden`;
+	const diffMin = Math.round((ms - now) / 60_000);
+	if (Math.abs(diffMin) < 60) return relative.format(diffMin, "minute");
 	const diffHours = Math.round(diffMin / 60);
-	if (diffHours < 24) return `${diffHours} t siden`;
-	return formatRelativeNb(dayNumFromMs(ms));
+	if (Math.abs(diffHours) < 24) return relative.format(diffHours, "hour");
+	return formatRelativeDay(dayNumFromMs(ms));
 }
 
 /**
  * Coerces whatever a field holds into a day number.
  *
- * Frontmatter is the reason this exists: Obsidian parses `frist: 2026-11-21`
+ * Frontmatter is the reason this exists: Obsidian parses `due: 2026-11-21`
  * into a real `Date` object, while a quoted `"2026-11-21"` stays a string, and
  * our own task fields are already day numbers. All three must compare equal.
  */
@@ -114,15 +111,14 @@ export function coerceDayNum(value: unknown): number | undefined {
 /**
  * Resolves a date expression used in block filters.
  *
- * Accepted: "today"/"i dag", "tomorrow"/"i morgen", "yesterday"/"i går",
- * an ISO date, or an offset like "today+7d", "today-2w", "i dag + 1m".
+ * Accepted: "today", "tomorrow", "yesterday", an ISO date, or an offset like
+ * "today+7d", "today-2w", "today+1m". Norwegian equivalents are kept as aliases
+ * because the plugin grew up in a Norwegian vault and they cost nothing.
  * Returns undefined if the expression is not a date at all.
  */
 export function resolveDateExpr(input: unknown, base = today()): number | undefined {
 	if (typeof input === "number" && Number.isFinite(input)) return input;
-	if (input instanceof Date) {
-		return toDayNum(input.getFullYear(), input.getMonth() + 1, input.getDate());
-	}
+	if (input instanceof Date) return coerceDayNum(input);
 	if (typeof input !== "string") return undefined;
 
 	const raw = input.trim().toLowerCase().replace(/\s+/g, "");

@@ -9,8 +9,8 @@
  *     done: false                     # equality
  *     due: { to: today }              # on or before today
  *     due: { from: today, to: today+7d }
- *     tags: { has: [skole, prøve] }   # any of
- *     text: { matches: "kapittel" }
+ *     tags: { has: [school, exam] }   # any of
+ *     text: { matches: "chapter" }
  *     status: { not: "-" }
  */
 
@@ -19,7 +19,7 @@ import { type Accessor, type Row, type Source, accessor, isDateField } from "./f
 
 export type Predicate = (row: Row) => boolean;
 
-/** Keyword shortcuts that expand to a range on a date field. */
+/** Keyword shortcuts that expand to a range on a date field. Norwegian aliases included. */
 const DATE_KEYWORDS = new Set([
 	"overdue", "forfalt",
 	"today", "i dag", "idag",
@@ -211,7 +211,7 @@ function compileOperators(
 				break;
 			}
 			default:
-				console.warn(`Puls: ukjent filter-operator "${rawOp}" ble ignorert`);
+				console.warn(`Puls: ignored unknown filter operator "${rawOp}"`);
 		}
 	}
 

@@ -111,14 +111,14 @@ export default class PulsPlugin extends Plugin {
 	private addCommands(): void {
 		this.addCommand({
 			id: "rebuild-index",
-			name: "Bygg indeksen på nytt",
+			name: "Rebuild index",
 			callback: async () => {
 				const started = performance.now();
 				await this.index.build();
 				const elapsed = Math.round(performance.now() - started);
 				const stats = this.index.stats();
 				new Notice(
-					`Puls: ${stats.files} notater og ${stats.tasks} oppgaver indeksert på ${elapsed} ms`,
+					`Puls: indexed ${stats.files} notes and ${stats.tasks} tasks in ${elapsed} ms`,
 					5000,
 				);
 			},
@@ -126,13 +126,13 @@ export default class PulsPlugin extends Plugin {
 
 		this.addCommand({
 			id: "insert-task-block",
-			name: "Sett inn oppgaveliste",
+			name: "Insert task list",
 			editorCallback: (editor) => {
 				editor.replaceSelection(
 					[
 						"```puls",
 						"view: tasks",
-						"title: Dagens oppgaver",
+						"title: Due today",
 						"filter:",
 						"  done: false",
 						"  due: { to: today }",
@@ -146,14 +146,14 @@ export default class PulsPlugin extends Plugin {
 
 		this.addCommand({
 			id: "insert-chart-block",
-			name: "Sett inn graf",
+			name: "Insert chart",
 			editorCallback: (editor) => {
 				editor.replaceSelection(
 					[
 						"```puls",
 						"view: chart",
 						"type: bar",
-						"title: Åpne oppgaver per mappe",
+						"title: Open tasks by folder",
 						"filter:",
 						"  done: false",
 						"by: folder",
@@ -182,24 +182,24 @@ class PulsSettingTab extends PluginSettingTab {
 
 		const stats = this.plugin.index.stats();
 		new Setting(containerEl)
-			.setName("Indeks")
+			.setName("Index")
 			.setDesc(
 				this.plugin.index.ready
-					? `${stats.files} notater, ${stats.tasks} oppgaver (${stats.openTasks} åpne).`
-					: "Bygges …",
+					? `${stats.files} notes, ${stats.tasks} tasks (${stats.openTasks} open).`
+					: "Building…",
 			)
 			.addButton((button) =>
-				button.setButtonText("Bygg på nytt").onClick(async () => {
+				button.setButtonText("Rebuild").onClick(async () => {
 					await this.plugin.index.build();
 					this.display();
 				}),
 			);
 
 		new Setting(containerEl)
-			.setName("Bygg indeks ved oppstart")
+			.setName("Build index at startup")
 			.setDesc(
-				"Leser hele vaulten når Obsidian starter. Skru av bare hvis oppstarten føles treg " +
-					"på en veldig stor vault — da bygges indeksen først når du åpner et dashbord.",
+				"Reads the whole vault when Obsidian starts. Turn this off only if startup feels " +
+					"slow on a very large vault; the index is then built when you first open a dashboard.",
 			)
 			.addToggle((toggle) =>
 				toggle.setValue(this.plugin.settings.rebuildOnStart).onChange(async (value) => {
@@ -209,11 +209,11 @@ class PulsSettingTab extends PluginSettingTab {
 			);
 
 		const about = containerEl.createDiv({ cls: "puls-about" });
-		about.createEl("h3", { text: "Personvern" });
+		about.createEl("h3", { text: "Privacy" });
 		about.createEl("p", {
 			text:
-				"Puls sender ingenting ut av maskinen, laster ikke ned noe, og kjører ingen " +
-				"JavaScript fra notatene dine. Alt oppsett er data, ikke kode.",
+				"Puls makes no network requests, downloads nothing, and never executes " +
+				"JavaScript from your notes. Block configuration is data, not code.",
 		});
 	}
 }

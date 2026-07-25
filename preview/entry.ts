@@ -10,16 +10,16 @@ import { Tooltip } from "../src/charts/svg";
 import { renderCountdown } from "../src/views/countdown-view";
 import { today } from "../src/core/dates";
 
-const format = (n: number) => (Number.isInteger(n) ? n.toLocaleString("nb-NO") : n.toFixed(1));
+const format = (n: number) => (Number.isInteger(n) ? n.toLocaleString() : n.toFixed(1));
 const tooltip = new Tooltip();
 
 const byFolder: Datum[] = [
-	{ label: "Skole/Matematikk R2", value: 23 },
-	{ label: "Skole/Historie", value: 17 },
-	{ label: "Skole/Norsk", value: 12 },
-	{ label: "Prosjekter", value: 8 },
-	{ label: "Kilder", value: 5 },
-	{ label: "Logg", value: 2 },
+	{ label: "School/Mathematics", value: 23 },
+	{ label: "School/History", value: 17 },
+	{ label: "School/Norwegian", value: 12 },
+	{ label: "Projects", value: 8 },
+	{ label: "Sources", value: 5 },
+	{ label: "Log", value: 2 },
 ];
 
 const overTime: Datum[] = Array.from({ length: 28 }, (_, i) => ({
@@ -29,11 +29,11 @@ const overTime: Datum[] = Array.from({ length: 28 }, (_, i) => ({
 }));
 
 const byPriority: Datum[] = [
-	{ label: "Høyest", value: 4 },
-	{ label: "Høy", value: 11 },
+	{ label: "Highest", value: 4 },
+	{ label: "High", value: 11 },
 	{ label: "Normal", value: 28 },
-	{ label: "Lav", value: 7 },
-	{ label: "Lavest", value: 3 },
+	{ label: "Low", value: 7 },
+	{ label: "Lowest", value: 3 },
 ];
 
 function mount(id: string, kind: string, data: Datum[], width: number, title?: string) {
@@ -50,7 +50,7 @@ function mount(id: string, kind: string, data: Datum[], width: number, title?: s
 for (const theme of ["light", "dark"]) {
 	mount(`${theme}-bar`, "bar", byFolder, 420);
 	mount(`${theme}-line`, "line", overTime, 460);
-	mount(`${theme}-donut`, "donut", byPriority, 420, "oppgaver");
+	mount(`${theme}-donut`, "donut", byPriority, 420, "tasks");
 	// Narrow column, to check label fitting and overflow.
 	mount(`${theme}-narrow`, "bar", byFolder, 260);
 }
@@ -61,23 +61,23 @@ const day = 86_400_000;
 function goal(name: string, daysOut: number, taskCount = 0, openTaskCount = 0) {
 	const deadline = new Date((today() + daysOut) * day);
 	return {
-		path: `Mål/${name}.md`, name, folder: "Mål",
+		path: `Goals/${name}.md`, name, folder: "Goals",
 		mtime: Date.now(), ctime: Date.now(), size: 0,
 		frontmatter: {
-			type: "mål",
-			frist: deadline,
-			startet: new Date((today() - 40) * day),
+			type: "goal",
+			due: deadline,
+			started: new Date((today() - 40) * day),
 		},
 		tags: [], taskCount, openTaskCount,
 	};
 }
 
 const goals = [
-	goal("Eksamen R2", 119, 7, 3),
-	goal("Særemne norsk", 101, 5, 5),
-	goal("Kapittelprøve", 9),
-	goal("Innlevering historie", 0),
-	goal("Gruppeoppgave", -4),
+	goal("Exam", 119, 7, 3),
+	goal("Essay", 101, 5, 5),
+	goal("Chapter test", 9),
+	goal("History submission", 0),
+	goal("Group project", -4),
 ];
 
 const ctx = {
@@ -92,7 +92,7 @@ for (const theme of ["light", "dark"]) {
 	renderCountdown(
 		host,
 		{ rows: goals as never, groups: null, total: goals.length },
-		{ view: "countdown", source: "files", date: "frist", start: "startet" } as never,
+		{ view: "countdown", source: "files", date: "due", start: "started" } as never,
 		ctx,
 	);
 }

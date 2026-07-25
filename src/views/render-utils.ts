@@ -78,7 +78,7 @@ export function renderCapped<T>(
 	const remaining = items.length - cap;
 	const more = parent.createEl("button", {
 		cls: "puls-more",
-		text: `Vis ${remaining} til`,
+		text: `Show ${remaining} more`,
 	});
 	more.addEventListener("click", () => {
 		more.remove();
@@ -88,5 +88,5 @@ export function renderCapped<T>(
 
 export function truncated(total: number, shown: number): string | null {
 	if (total <= shown) return null;
-	return `Viser ${shown} av ${total}`;
+	return `Showing ${shown} of ${total}`;
 }

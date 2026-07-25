@@ -41,12 +41,12 @@ export interface BlockConfig {
 export class ConfigError extends Error {}
 
 const VIEW_ALIASES: Record<string, ViewKind> = {
-	tasks: "tasks", oppgaver: "tasks", task: "tasks",
-	table: "table", tabell: "table",
-	stat: "stat", nøkkeltall: "stat", tall: "stat", kpi: "stat",
-	chart: "chart", graf: "chart", diagram: "chart",
-	text: "text", tekst: "text",
-	countdown: "countdown", nedtelling: "countdown", frist: "countdown",
+	tasks: "tasks", task: "tasks",
+	table: "table",
+	stat: "stat", kpi: "stat",
+	chart: "chart", diagram: "chart",
+	text: "text",
+	countdown: "countdown",
 };
 
 export function parseConfig(yaml: string): BlockConfig {
@@ -54,44 +54,44 @@ export function parseConfig(yaml: string): BlockConfig {
 	try {
 		raw = yaml.trim() ? parseYaml(yaml) : {};
 	} catch (error) {
-		throw new ConfigError(`Kunne ikke lese oppsettet: ${(error as Error).message}`);
+		throw new ConfigError(`Could not read the block config: ${(error as Error).message}`);
 	}
 	if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
-		throw new ConfigError("Oppsettet må være nøkkel/verdi-par, for eksempel `view: tasks`.");
+		throw new ConfigError("The block config must be key/value pairs, for example `view: tasks`.");
 	}
 
 	const config = raw as Record<string, unknown>;
-	const viewName = String(config.view ?? config.visning ?? "").toLowerCase();
+	const viewName = String(config.view ?? "").toLowerCase();
 	const view = VIEW_ALIASES[viewName];
 	if (!view) {
 		throw new ConfigError(
-			`Ukjent visning "${config.view ?? ""}". Gyldige valg: tasks, table, stat, chart, countdown, text.`,
+			`Unknown view "${config.view ?? ""}". Valid values: tasks, table, stat, chart, countdown, text.`,
 		);
 	}
 
 	// Charts and stats read tasks unless told otherwise; tables read files.
-	const explicitSource = String(config.source ?? config.kilde ?? "").toLowerCase();
+	const explicitSource = String(config.source ?? "").toLowerCase();
 	const source: Source =
-		explicitSource === "files" || explicitSource === "filer" || explicitSource === "notes"
+		explicitSource === "files" || explicitSource === "notes"
 			? "files"
-			: explicitSource === "tasks" || explicitSource === "oppgaver"
+			: explicitSource === "tasks"
 				? "tasks"
 				: view === "table" || view === "countdown"
 					? "files"
 					: "tasks";
 
-	const from = normalizeFrom(config.from ?? config.fra);
+	const from = normalizeFrom(config.from);
 
 	return {
 		...config,
 		view,
 		source,
 		from,
-		title: config.title !== undefined ? String(config.title) : config.tittel !== undefined ? String(config.tittel) : undefined,
-		filter: config.filter ?? config.filtrer,
-		sort: config.sort ?? config.sorter,
-		group: config.group ?? config.grupper,
-		limit: toNumber(config.limit ?? config.grense),
+		title: config.title !== undefined ? String(config.title) : undefined,
+		filter: config.filter,
+		sort: config.sort,
+		group: config.group,
+		limit: toNumber(config.limit),
 	};
 }
 

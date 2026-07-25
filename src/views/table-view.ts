@@ -4,13 +4,13 @@
  * Columns are declared, not computed by an expression language:
  *
  *   columns:
- *     - { field: name, label: Notat, link: true }
- *     - { field: mtime, label: Endret, format: relative }
- *     - { field: fremdrift, format: progress, max: totalSider }
+ *     - { field: name, label: Note, link: true }
+ *     - { field: mtime, label: Modified, format: relative }
+ *     - { field: page, format: progress, max: totalPages }
  */
 
 import type { PulsFile } from "../core/types";
-import { formatISO, formatRelativeMs, formatRelativeNb } from "../core/dates";
+import { formatISO, formatRelativeMs, formatRelativeDay } from "../core/dates";
 import type { BlockConfig, QueryResult } from "../query/query";
 import { type Row, accessor } from "../query/fields";
 import type { ViewContext } from "./task-view";
@@ -36,7 +36,7 @@ export function renderTable(
 	sectionHeader(container, config.title);
 
 	if (result.rows.length === 0) {
-		emptyState(container, "Ingen treff.");
+		emptyState(container, "No matches.");
 		return;
 	}
 
@@ -64,20 +64,20 @@ export function renderTable(
 
 function buildColumns(config: BlockConfig): Column[] {
 	const source = config.source;
-	const raw = config.columns ?? config.kolonner;
+	const raw = config.columns;
 
 	if (!Array.isArray(raw) || raw.length === 0) {
 		// Sensible default: identify the row and show when it changed.
 		return source === "files"
 			? [
-					{ label: "Notat", get: accessor(source, "name"), format: "text", link: true, align: "left" },
-					{ label: "Mappe", get: accessor(source, "folder"), format: "text", link: false, align: "left" },
-					{ label: "Endret", get: accessor(source, "mtimeMs"), format: "relative-ms", link: false, align: "right" },
+					{ label: "Note", get: accessor(source, "name"), format: "text", link: true, align: "left" },
+					{ label: "Folder", get: accessor(source, "folder"), format: "text", link: false, align: "left" },
+					{ label: "Modified", get: accessor(source, "mtimeMs"), format: "relative-ms", link: false, align: "right" },
 				]
 			: [
-					{ label: "Oppgave", get: accessor(source, "text"), format: "markdown", link: false, align: "left" },
-					{ label: "Frist", get: accessor(source, "due"), format: "relative", link: false, align: "right" },
-					{ label: "Notat", get: accessor(source, "file"), format: "text", link: true, align: "left" },
+					{ label: "Task", get: accessor(source, "text"), format: "markdown", link: false, align: "left" },
+					{ label: "Due", get: accessor(source, "due"), format: "relative", link: false, align: "right" },
+					{ label: "Note", get: accessor(source, "file"), format: "text", link: true, align: "left" },
 				];
 	}
 
@@ -94,10 +94,10 @@ function buildColumns(config: BlockConfig): Column[] {
 		}
 
 		const spec = entry as Record<string, unknown>;
-		const field = String(spec.field ?? spec.felt ?? "");
+		const field = String(spec.field ?? "");
 		const format = String(spec.format ?? spec.format ?? inferFormat(field));
 		return {
-			label: String(spec.label ?? spec.navn ?? prettify(field)),
+			label: String(spec.label ?? prettify(field)),
 			get: accessor(source, field),
 			format,
 			link: spec.link === true || (spec.link === undefined && (field === "name" || field === "file")),
@@ -142,7 +142,7 @@ function renderCell(tr: HTMLElement, row: Row, column: Column, ctx: ViewContext)
 		case "relative":
 			if (typeof value === "number") {
 				td.setAttr("title", formatISO(value));
-				td.setText(formatRelativeNb(value));
+				td.setText(formatRelativeDay(value));
 			} else td.setText(String(value));
 			return;
 		case "relative-ms":
@@ -210,6 +210,6 @@ function renderProgress(td: HTMLElement, value: unknown, max: unknown): void {
 }
 
 export function formatNumber(value: number): string {
-	if (Number.isInteger(value)) return value.toLocaleString("nb-NO");
-	return value.toLocaleString("nb-NO", { maximumFractionDigits: 1 });
+	if (Number.isInteger(value)) return value.toLocaleString();
+	return value.toLocaleString(undefined, { maximumFractionDigits: 1 });
 }

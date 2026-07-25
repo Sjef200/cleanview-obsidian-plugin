@@ -220,7 +220,7 @@ export class VaultIndex {
 			try {
 				listener(paths);
 			} catch (error) {
-				console.error("Puls: en dashbord-blokk feilet under oppdatering", error);
+				console.error("Puls: a dashboard block failed while updating", error);
 			}
 		}
 	}

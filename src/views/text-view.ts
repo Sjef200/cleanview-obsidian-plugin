@@ -6,11 +6,14 @@
  * fixed set of placeholders resolved by lookup, so a note can never run code.
  *
  *   view: text
- *   format: "I dag er {dato} — {åpne} åpne oppgaver"
+ *   format: "Today is {date} — {open} open tasks"
+ *
+ * Norwegian aliases ({dato}, {åpne}, …) are kept: the plugin grew up in a
+ * Norwegian vault and they cost nothing.
  */
 
 import type { VaultIndex } from "../core/index";
-import { formatISO, formatLongNb, today } from "../core/dates";
+import { formatISO, formatLong, today } from "../core/dates";
 
 const PLACEHOLDER = /\{([a-zæøå]+)(?::([a-zæøå]+))?\}/giu;
 
@@ -32,10 +35,11 @@ function resolve(name: string, modifier: string | undefined, index: VaultIndex):
 	switch (name) {
 		case "dato":
 		case "date":
-			if (modifier === "iso" || modifier === "kort") return formatISO(day);
-			return formatLongNb(day);
+			if (modifier === "iso" || modifier === "short" || modifier === "kort") return formatISO(day);
+			return formatLong(day);
+		case "weekday":
 		case "ukedag":
-			return formatLongNb(day).split(" ")[0];
+			return formatLong(day).split(" ")[0];
 		case "uke":
 		case "week":
 			return String(isoWeek(day));

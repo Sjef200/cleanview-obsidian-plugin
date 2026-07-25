@@ -122,7 +122,7 @@ export class PulsBlock extends MarkdownRenderChild {
 		this.containerEl.empty();
 
 		if (!this.index.ready) {
-			this.containerEl.createDiv({ cls: "puls-empty", text: "Bygger indeks…" });
+			this.containerEl.createDiv({ cls: "puls-empty", text: "Building index…" });
 			// build() notifies every listener when it finishes, so no polling.
 			this.renderedRevision = -1;
 			return;
@@ -153,8 +153,8 @@ export class PulsBlock extends MarkdownRenderChild {
 					break;
 			}
 		} catch (error) {
-			console.error("Puls: feil under tegning", error);
-			errorState(this.containerEl, `Kunne ikke tegne blokken: ${(error as Error).message}`);
+			console.error("Puls: render failed", error);
+			errorState(this.containerEl, `Could not render this block: ${(error as Error).message}`);
 		}
 	}
 }

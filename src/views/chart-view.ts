@@ -12,7 +12,7 @@
  * the palette rules require visible relief when that is true.
  */
 
-import { formatISO, formatRelativeNb } from "../core/dates";
+import { formatISO, formatRelativeDay } from "../core/dates";
 import { compileAggregator } from "../query/aggregate";
 import { type Row, type Source, accessor, isDateField } from "../query/fields";
 import type { BlockConfig, QueryResult } from "../query/query";
@@ -42,7 +42,7 @@ export function renderChart(
 	const data = bucket(result.rows, byField, config, type);
 
 	if (data.length === 0) {
-		emptyState(container, "Ingen data å tegne.");
+		emptyState(container, "Nothing to plot.");
 		return { dispose: () => undefined };
 	}
 
@@ -102,7 +102,7 @@ function bucket(rows: Row[], byField: string, config: BlockConfig, type: string)
 		label: dateAxis && typeof entry.key === "number" ? formatISO(entry.key).slice(5) : key,
 		value: aggregate(entry.rows),
 		sortKey: typeof entry.key === "number" ? entry.key : undefined,
-		detail: dateAxis && typeof entry.key === "number" ? formatRelativeNb(entry.key) : undefined,
+		detail: dateAxis && typeof entry.key === "number" ? formatRelativeDay(entry.key) : undefined,
 	}));
 
 	if (dateAxis) {
@@ -112,7 +112,7 @@ function bucket(rows: Row[], byField: string, config: BlockConfig, type: string)
 		data.sort((a, b) => b.value - a.value);
 	}
 
-	const limit = Number(config.maxBars ?? config.maks);
+	const limit = Number(config.maxBars);
 	if (Number.isFinite(limit) && limit > 0 && data.length > limit && type === "bar") {
 		data = data.slice(0, limit);
 	}
@@ -145,7 +145,7 @@ function fillDateGaps(data: Datum[]): Datum[] {
 				label: formatISO(day).slice(5),
 				value: 0,
 				sortKey: day,
-				detail: formatRelativeNb(day),
+				detail: formatRelativeDay(day),
 			},
 		);
 	}
@@ -153,8 +153,8 @@ function fillDateGaps(data: Datum[]): Datum[] {
 }
 
 function chartSummary(title: string | undefined, type: string, data: Datum[]): string {
-	const kind = type === "line" ? "linjediagram" : type === "donut" ? "sektordiagram" : "stolpediagram";
-	return `${title ?? "Graf"}: ${kind} med ${data.length} punkter`;
+	const kind = type === "line" ? "line chart" : type === "donut" ? "donut chart" : "bar chart";
+	return `${title ?? "Chart"}: ${kind} with ${data.length} points`;
 }
 
 /** Reveals the numbers behind the chart. Required relief for low-contrast hues. */
@@ -163,27 +163,27 @@ function addTableToggle(
 	data: Datum[],
 	format: (n: number) => string,
 ): void {
-	const toggle = container.createEl("button", { cls: "puls-more puls-table-toggle", text: "Vis tall" });
+	const toggle = container.createEl("button", { cls: "puls-more puls-table-toggle", text: "Show values" });
 	let table: HTMLElement | null = null;
 
 	toggle.addEventListener("click", () => {
 		if (table) {
 			table.remove();
 			table = null;
-			toggle.setText("Vis tall");
+			toggle.setText("Show values");
 			return;
 		}
 		table = container.createDiv({ cls: "puls-table-wrap" });
 		const el = table.createEl("table", { cls: "puls-table" });
 		const head = el.createEl("thead").createEl("tr");
-		head.createEl("th", { text: "Kategori" });
-		head.createEl("th", { text: "Verdi", cls: "puls-align-right" });
+		head.createEl("th", { text: "Category" });
+		head.createEl("th", { text: "Value", cls: "puls-align-right" });
 		const body = el.createEl("tbody");
 		for (const datum of data) {
 			const tr = body.createEl("tr");
 			tr.createEl("td", { text: datum.label });
 			tr.createEl("td", { text: format(datum.value), cls: "puls-align-right" });
 		}
-		toggle.setText("Skjul tall");
+		toggle.setText("Hide values");
 	});
 }

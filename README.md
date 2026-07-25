@@ -1,113 +1,138 @@
 # Puls
 
-Raske, live dashbord i Obsidian. Skrevet for å erstatte Dataview + Tasks + Tracker
-+ Meta Bind-stakken i et oppsett der Dataview ble for treg.
+Fast, fully local dashboards for [Obsidian](https://obsidian.md). Task lists,
+tables, key figures, countdowns and hand-drawn SVG charts, in a ` ```puls `
+code block.
 
-## Hvorfor dette er raskere enn Dataview
+Written to replace a Dataview + Tasks + Tracker stack in a vault where Dataview
+had become too slow to use.
 
-Dataview bygger og vedlikeholder sin **egen** indeks over hele vaulten, parallelt
-med den Obsidian allerede har, og kjører hver spørring på nytt gjennom en
-tolket spørrespråk-motor når noe endrer seg.
+```puls
+view: tasks
+title: Due today
+filter:
+  done: false
+  due: { to: today }
+sort: [priority desc, due asc]
+```
 
-Puls gjør fire ting annerledes:
+## Why it is fast
 
-1. **Gjenbruker Obsidians `metadataCache`.** Frontmatter, tagger og
-   avkrysningsbokser er allerede parset og ligger i minnet. Puls leser den
-   strukturen i stedet for å parse markdown på nytt.
-2. **Leser bare filer som faktisk har oppgaver.** Cachen forteller hvilke filer
-   som inneholder avkrysningsbokser før noe leses fra disk. En vault med 5000
-   notater der 200 har oppgaver gjør 200 lesinger, ikke 5000.
-3. **Null I/O ved redigering.** `metadataCache.on("changed")` gir innholdet i
-   fila som argument, så reindeksering av et redigert notat leser ingenting.
-4. **Ingen tolkning per rad.** Filtre og sorteringer kompileres til lukkede
-   funksjoner én gang når blokken lastes.
+Dataview builds and maintains **its own** index of the vault, parallel to the
+one Obsidian already has, and re-runs each query through an interpreted query
+engine whenever anything changes.
 
-Målt på 20 000 oppgaver (`npm test`):
+Puls does four things differently:
 
-| Operasjon | Tid |
+1. **It reuses Obsidian's `metadataCache`.** Frontmatter, tags and checkbox
+   state are already parsed and in memory. Puls reads that structure instead of
+   parsing markdown again.
+2. **It only reads files that actually contain tasks.** The cache reports which
+   files have checkboxes before anything is read from disk. A vault of 5000
+   notes where 200 contain tasks performs 200 reads, not 5000.
+3. **Editing costs no I/O.** `metadataCache.on("changed")` passes the new file
+   contents as an argument, so re-indexing an edited note reads nothing.
+4. **Nothing is interpreted per row.** Filters and sorts compile to closures
+   once, when the block loads.
+
+Measured on 20 000 tasks (`npm test`):
+
+| Operation | Time |
 |---|---|
-| Parse alle 20 000 oppgaver (full reindeksering) | ~29 ms |
-| Filtrer + sorter (én dashbord-oppdatering) | ~1,8 ms |
+| Parse all 20 000 tasks (full re-index) | ~30 ms |
+| Filter + sort (one dashboard refresh) | ~1.9 ms |
 
-En skjermoppdatering er 16 ms, så en dashbord-blokk kan tegnes om flere ganger
-per frame.
+A frame is 16 ms, so a block can be redrawn several times per frame.
 
-I tillegg tegnes en blokk **bare** om når endringen faktisk angår den: en blokk
-med `from: Skole` ignorerer endringer i `Prosjekter/`, og blokker utenfor
-skjermen merkes som utdaterte og tas igjen når du scroller til dem.
+On top of that, a block only re-renders when a change is **relevant** to it: a
+block scoped with `from: School` ignores edits under `Projects/`, and blocks
+scrolled out of view are marked stale and catch up when they scroll back in.
 
-## Trygghet
+## Safety
 
-- **Ingen nettverkskall.** Ingen telemetri, ingen oppdateringssjekk, ingen CDN.
-- **Ingen `eval`.** Oppsettet er data, ikke kode. Dette erstatter blant annet
-  `$= dv.date(...)` uten å måtte skru på Dataviews JavaScript-queries.
-- **Ingen avhengigheter.** `package.json` har kun byggeverktøy. Ingenting fra
-  npm havner i `main.js` — grafene er håndskrevet SVG.
-- **Ingen Node-API-er**, så plugin-en virker på iPhone og iPad.
-- **Skriver bare når du klikker.** Eneste skriveoperasjon er å krysse av en
-  oppgave, og den verifiserer at linja fortsatt ser ut som den den indekserte
-  før den endrer noe.
+- **No network access.** No telemetry, no update check, no CDN.
+- **No `eval`.** Block configuration is data, not code. This includes the
+  replacement for `$= dv.date(...)`, so Dataview's JavaScript queries never need
+  to be enabled.
+- **No dependencies.** `package.json` contains build tooling only; nothing from
+  npm ends up in `main.js`. The charts are hand-written SVG.
+- **No Node APIs**, so it runs on iOS and Android.
+- **Writes only when you click.** The single write operation is toggling a
+  checkbox, and it verifies the target line still matches what was indexed
+  before changing anything.
 
-## Blokkoppsett
+## Installation
 
-Alle blokker starter med ` ```puls ` og inneholder YAML.
+Not yet in the community plugin browser. To install manually, copy `main.js`,
+`manifest.json` and `styles.css` from a
+[release](../../releases) into `<vault>/.obsidian/plugins/puls/`, then enable
+the plugin in *Settings → Community plugins*.
 
-### Felles nøkler
+## Block reference
 
-| Nøkkel | Betydning |
+Every block starts with ` ```puls ` and contains YAML.
+
+### Common keys
+
+| Key | Meaning |
 |---|---|
-| `view` | `tasks`, `table`, `stat`, `chart`, `text` |
-| `title` | Overskrift over blokken |
-| `source` | `tasks` (standard) eller `files` |
-| `from` | Begrens til mappe(r): `from: Skole` eller `from: [Skole, Prosjekter]` |
-| `filter` | Se under |
+| `view` | `tasks`, `table`, `stat`, `chart`, `countdown`, `text` |
+| `title` | Heading above the block |
+| `source` | `tasks` (default) or `files` |
+| `from` | Restrict to folders: `from: School` or `from: [School, Projects]` |
+| `filter` | See below |
 | `sort` | `[priority desc, due asc]` |
 | `group` | `file`, `folder`, `due`, `priority`, `status`, `tags` |
-| `limit` | Maks antall rader |
+| `limit` | Maximum rows |
 
-### Filtre
+### Filters
 
-Verdi alene betyr «er lik». Objekt betyr operatorer.
+A bare value means equality. An object means operators.
 
 ```yaml
 filter:
-  done: false                        # er lik
-  due: { to: today }                 # på eller før i dag
-  due: { from: today, to: today+7d } # intervall
-  due: overdue                       # nøkkelord: overdue, today, week, none, future
-  tags: { has: [skole, prøve] }      # har minst én
-  text: { matches: kapittel }        # inneholder
-  status: { not: "-" }               # ikke lik
+  done: false                        # equals
+  due: { to: today }                 # on or before today
+  due: { from: today, to: today+7d } # range
+  due: overdue                       # keyword: overdue, today, week, none, future
+  tags: { has: [school, exam] }      # has at least one
+  text: { matches: chapter }         # contains
+  status: { not: "-" }               # not equal
 ```
 
-Operatorer: `is`/`eq`, `not`/`ne`, `before`/`lt`, `after`/`gt`, `from`/`gte`/`min`,
+Operators: `is`/`eq`, `not`/`ne`, `before`/`lt`, `after`/`gt`, `from`/`gte`/`min`,
 `to`/`lte`/`max`, `has`/`in`, `matches`/`contains`, `exists`.
 
-Datouttrykk: `today`, `i dag`, `i morgen`, `2026-07-11`, `today+7d`, `today-2w`,
-`today+1m`.
+Date expressions: `today`, `tomorrow`, `yesterday`, `2026-11-21`, `today+7d`,
+`today-2w`, `today+1m`.
 
-### Oppgavefelter
+### Task fields
 
 `text`, `done`, `status`, `priority`, `due`, `scheduled`, `start`, `created`,
 `completedOn`, `recurrence`, `tags`, `path`, `file`, `folder`, `line`.
 
-Både Tasks-dialekten (`📅 2026-07-11 ⏫ 🔁 every week`) og Dataview-dialekten
-(`[due:: 2026-07-11] [priority:: high]`) leses. Du trenger ikke velge.
+Both metadata dialects are read, so you do not have to pick one:
 
-### Notatfelter
+```markdown
+- [ ] Read chapter 5 📅 2026-09-15 ⏫ 🔁 every week   # Tasks plugin
+- [ ] Read chapter 5 [due:: 2026-09-15] [priority:: high]   # Dataview
+```
+
+### Note fields
 
 `name`, `path`, `folder`, `tags`, `size`, `tasks`, `openTasks`, `mtime`, `ctime`.
-Alt annet slås opp i frontmatter, så `status: leser` filtrerer direkte på
-frontmatter-feltet `status`.
+Anything else is looked up in frontmatter, so `status: reading` filters on the
+note's own `status` key. Frontmatter dates work whether Obsidian parsed them
+into a `Date` or left them as a string.
 
-### Eksempler
+### Views
 
 ```yaml
 view: stat
-title: Åpne oppgaver
+title: Open tasks
 filter: { done: false }
-value: count          # count, sum:felt, avg:felt, min:felt, max:felt, distinct:felt
-goal: 20              # valgfri måloppnåelse
+value: count          # count, sum:field, avg:field, min:field, max:field, distinct:field
+goal: 20              # optional progress bar
 ```
 
 ```yaml
@@ -119,52 +144,67 @@ filter: { done: false }
 ```
 
 ```yaml
+view: countdown
+filter: { type: goal }
+date: due             # optional; auto-detected from common key names
+sort: [due asc]
+```
+
+```yaml
 view: table
 source: files
 columns:
-  - { field: name, label: Notat, link: true }
-  - { field: gjeldendeSide, label: Fremdrift, format: progress, max: totalSider }
+  - { field: name, label: Note, link: true }
+  - { field: page, label: Progress, format: progress, max: totalPages }
 sort: [mtime desc]
 limit: 12
 ```
 
-Kolonneformater: `auto`, `text`, `number`, `date`, `relative`, `relative-ms`,
+Column formats: `auto`, `text`, `number`, `date`, `relative`, `relative-ms`,
 `bool`, `tags`, `progress`, `markdown`.
 
 ```yaml
 view: text
-format: "{dato} · uke {uke} · {åpne} åpne oppgaver"
+format: "{date} · week {week} · {open} open tasks"
 ```
 
-Plassholdere: `{dato}`, `{dato:iso}`, `{ukedag}`, `{uke}`, `{år}`, `{åpne}`,
-`{oppgaver}`, `{notater}`.
+Placeholders: `{date}`, `{date:iso}`, `{weekday}`, `{week}`, `{year}`, `{open}`,
+`{tasks}`, `{notes}`.
 
-## Farger i grafene
+## Chart colours
 
-Kromet (bakgrunn, rutenett, tekst) arves fra Obsidian-temaet ditt via
-CSS-variabler, så grafene ser innfødte ut uansett tema.
+Chart chrome — surface, gridlines, text — is inherited from your Obsidian theme
+through its CSS variables, so charts look native under any theme.
 
-Seriefargene arves **ikke**. De er en fast palett som er validert for
-fargeblindhet mot både lys og mørk bakgrunn. En temaforfatter har aldri sjekket
-aksentfargene sine for det, og et diagram der kategoriene ikke kan skilles fra
-hverandre er verre enn ett som ignorerer temaet. Hver graf har også en
-«Vis tall»-knapp, siden tre av lysmodus-fargene ligger under 3:1 kontrast mot
-bakgrunnen.
+Series colours are **not** inherited. They are a fixed palette validated for
+colour-vision deficiency against both a light and a dark surface. A theme author
+has never checked their accent colours for that, and a chart whose categories
+cannot be told apart is worse than one that ignores the theme. Every chart also
+carries a *Show values* toggle, since three of the light-mode series colours sit
+below 3:1 contrast against the surface.
 
-## Utvikling
+Dates and numbers are formatted with `Intl` using the runtime locale, so they
+follow the reader's language without the plugin shipping translations.
+
+## Development
 
 ```bash
 npm install
-npm run dev      # esbuild i watch-modus
-npm run build    # typesjekk + minifisert build
-npm test         # 49 tester + ytelsesmåling, kjører i Node
+npm run dev      # esbuild in watch mode
+npm run build    # type-check + minified build
+npm test         # 58 assertions plus a performance measurement, in plain Node
+npm run preview  # chart and countdown harness at http://localhost:4599
 ```
 
-`preview/index.html` tegner alle graftypene i lyst og mørkt tema i en vanlig
-nettleser, uten å starte Obsidian. Graflaget bruker bare standard DOM-API-er
-nettopp derfor — det som vises der er den samme koden som kjører i plugin-en.
+`preview/` renders every chart type and the countdown cards, in light and dark,
+in an ordinary browser without starting Obsidian. The chart layer deliberately
+uses only standard DOM APIs so that what you see there is the same code that
+runs in the plugin; the view layer needs a small shim for Obsidian's element
+helpers, which lives in `preview/obsidian-shim.ts` and is never bundled.
 
-```bash
-python3 -m http.server 4599
-# åpne http://localhost:4599/.obsidian/plugins/puls/preview/index.html
-```
+Everything under `src/core` and `src/query` is free of Obsidian runtime
+dependencies — types only — which is what lets `npm test` run in Node.
+
+## Licence
+
+MIT

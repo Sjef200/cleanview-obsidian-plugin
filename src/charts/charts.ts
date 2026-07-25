@@ -336,7 +336,7 @@ function foldTail(data: Datum[], max: number): Datum[] {
 	const head = sorted.slice(0, max - 1);
 	const tail = sorted.slice(max - 1);
 	head.push({
-		label: `Annet (${tail.length})`,
+		label: `Other (${tail.length})`,
 		value: tail.reduce((sum, d) => sum + d.value, 0),
 	});
 	return head;

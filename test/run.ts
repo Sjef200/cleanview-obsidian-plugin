@@ -25,7 +25,7 @@ function check(name: string, actual: unknown, expected: unknown): void {
 		passed++;
 	} else {
 		failed++;
-		console.log(`  FAIL  ${name}\n          fikk:      ${a}\n          forventet: ${b}`);
+		console.log(`  FAIL  ${name}\n          got:      ${a}\n          expected: ${b}`);
 	}
 }
 
@@ -47,127 +47,127 @@ function listItem(line: number, task: string): ListItemCache {
 
 function parse(line: string, lineNo = 0): PulsTask {
 	const status = /\[(.)\]/.exec(line)?.[1] ?? " ";
-	const task = parseTaskLine(line, listItem(lineNo, status), "Skole/Matte.md", "Matte", "Skole");
-	if (!task) throw new Error(`kunne ikke parse: ${line}`);
+	const task = parseTaskLine(line, listItem(lineNo, status), "School/Matte.md", "Matte", "Skole");
+	if (!task) throw new Error(`could not parse: ${line}`);
 	return task;
 }
 
 // ---------------------------------------------------------------- dates
 
-console.log("\nDatoer");
-check("parseDate gyldig", parseDate("2026-07-11"), Date.UTC(2026, 6, 11) / 86_400_000);
-check("parseDate avviser 31. februar", parseDate("2026-02-31"), undefined);
-check("parseDate avviser tull", parseDate("i går"), undefined);
-check("formatISO er invers", formatISO(parseDate("2026-03-01")!), "2026-03-01");
+console.log("\nDates");
+check("parseDate accepts a valid date", parseDate("2026-07-11"), Date.UTC(2026, 6, 11) / 86_400_000);
+check("parseDate rejects 31 February", parseDate("2026-02-31"), undefined);
+check("parseDate rejects non-dates", parseDate("i går"), undefined);
+check("formatISO round-trips", formatISO(parseDate("2026-03-01")!), "2026-03-01");
 
 const base = parseDate("2026-07-11")!;
 check("today+7d", resolveDateExpr("today+7d", base), base + 7);
 check("today-2w", resolveDateExpr("today-2w", base), base - 14);
-check("norsk 'i dag'", resolveDateExpr("i dag", base), base);
-check("norsk 'i morgen'", resolveDateExpr("i morgen", base), base + 1);
-check("mellomrom tolereres", resolveDateExpr("today + 7d", base), base + 7);
-check("månedshopp krysser årsskifte", formatISO(resolveDateExpr("2026-11-30+2m", base)!), "2027-01-30");
-check("absolutt dato", resolveDateExpr("2026-01-05", base), parseDate("2026-01-05"));
-check("ugyldig uttrykk", resolveDateExpr("neste tirsdag", base), undefined);
+check("Norwegian alias: i dag", resolveDateExpr("i dag", base), base);
+check("Norwegian alias: i morgen", resolveDateExpr("i morgen", base), base + 1);
+check("whitespace is tolerated", resolveDateExpr("today + 7d", base), base + 7);
+check("month offset crosses the year boundary", formatISO(resolveDateExpr("2026-11-30+2m", base)!), "2027-01-30");
+check("absolute date", resolveDateExpr("2026-01-05", base), parseDate("2026-01-05"));
+check("invalid expression", resolveDateExpr("neste tirsdag", base), undefined);
 
 // ------------------------------------------------------------ task parsing
 
-console.log("\nOppgaveparsing (Tasks-dialekt)");
+console.log("\nTask parsing (Tasks dialect)");
 {
-	const t = parse("- [ ] Les kapittel 5 📅 2026-07-14 ⏫ #skole");
-	check("tekst renset", t.text, "Les kapittel 5 #skole");
-	check("frist", t.due, parseDate("2026-07-14"));
-	check("prioritet høy", t.priority, 4);
-	check("tagg", t.tags, ["skole"]);
-	check("ikke fullført", t.done, false);
+	const t = parse("- [ ] Read chapter 5 📅 2026-07-14 ⏫ #school");
+	check("metadata stripped from text", t.text, "Read chapter 5 #school");
+	check("due date", t.due, parseDate("2026-07-14"));
+	check("priority high", t.priority, 4);
+	check("tag", t.tags, ["school"]);
+	check("not done", t.done, false);
 }
 {
-	const t = parse("- [x] Innlevering ✅ 2026-07-10 📅 2026-07-09");
-	check("fullført", t.done, true);
-	check("fullførtdato", t.completedOn, parseDate("2026-07-10"));
-	check("frist beholdes", t.due, parseDate("2026-07-09"));
-	check("tekst uten metadata", t.text, "Innlevering");
+	const t = parse("- [x] Submission ✅ 2026-07-10 📅 2026-07-09");
+	check("done", t.done, true);
+	check("completion date", t.completedOn, parseDate("2026-07-10"));
+	check("due date preserved", t.due, parseDate("2026-07-09"));
+	check("text without metadata", t.text, "Submission");
 }
 {
-	const t = parse("    - [ ] Underoppgave 🔁 every week 🔺");
-	check("gjentakelse", t.recurrence, "every week");
-	check("prioritet høyest", t.priority, 5);
-	check("dybde fra innrykk", t.depth, 2);
+	const t = parse("    - [ ] Subtask 🔁 every week 🔺");
+	check("recurrence keeps multi-word value", t.recurrence, "every week");
+	check("priority highest", t.priority, 5);
+	check("depth from indent", t.depth, 2);
 }
 
-console.log("\nOppgaveparsing (Dataview-dialekt)");
+console.log("\nTask parsing (Dataview dialect)");
 {
-	const t = parse("- [ ] Skriv notat [due:: 2026-08-01] [priority:: high]");
-	check("inline frist", t.due, parseDate("2026-08-01"));
-	check("inline prioritet", t.priority, 4);
-	check("tekst renset", t.text, "Skriv notat");
+	const t = parse("- [ ] Write note [due:: 2026-08-01] [priority:: high]");
+	check("inline due date", t.due, parseDate("2026-08-01"));
+	check("inline priority", t.priority, 4);
+	check("metadata stripped from text", t.text, "Write note");
 }
 {
-	const t = parse("- [ ] Møte (frist:: 2026-09-15) med (sted:: skolen)");
-	check("norsk feltnavn frist", t.due, parseDate("2026-09-15"));
-	ok("ukjent felt beholdes i teksten", t.text.includes("sted:: skolen"));
+	const t = parse("- [ ] Meeting (frist:: 2026-09-15) with (place:: school)");
+	check("Norwegian field alias: frist", t.due, parseDate("2026-09-15"));
+	ok("unknown inline field is left in the text", t.text.includes("place:: school"));
 }
 {
-	const t = parse("- [/] Påbegynt oppgave");
-	check("egendefinert status regnes som gjort", t.done, true);
-	check("statustegn bevart", t.status, "/");
+	const t = parse("- [/] In-progress task");
+	check("custom status counts as done", t.done, true);
+	check("status character preserved", t.status, "/");
 }
 {
-	const t = parse("- [ ] Ren oppgave uten noe");
-	check("ingen frist", t.due, undefined);
-	check("standardprioritet", t.priority, 2);
+	const t = parse("- [ ] Plain task with nothing");
+	check("no due date", t.due, undefined);
+	check("default priority", t.priority, 2);
 }
 
 // -------------------------------------------------- the actual dashboard
 
-console.log("\nDashbordspørringene dine");
+console.log("\nThe dashboard queries");
 
 const T = today();
 const tasks: PulsTask[] = [
-	parse("- [ ] Forfalt lekse 📅 " + formatISO(T - 3) + " ⏫"),
-	parse("- [ ] Innlevering i dag 📅 " + formatISO(T)),
-	parse("- [ ] Prøve om 3 dager 📅 " + formatISO(T + 3) + " 🔺"),
-	parse("- [ ] Om 10 dager 📅 " + formatISO(T + 10)),
-	parse("- [ ] Uten frist"),
-	parse("- [x] Ferdig 📅 " + formatISO(T - 1)),
+	parse("- [ ] Overdue homework 📅 " + formatISO(T - 3) + " ⏫"),
+	parse("- [ ] Due today 📅 " + formatISO(T)),
+	parse("- [ ] Test in 3 days 📅 " + formatISO(T + 3) + " 🔺"),
+	parse("- [ ] In 10 days 📅 " + formatISO(T + 10)),
+	parse("- [ ] No deadline"),
+	parse("- [x] Finished 📅 " + formatISO(T - 1)),
 ];
 
 // "Dagens oppgaver": !completed AND (due = today OR due < today)
 {
 	const predicate = compileFilter({ done: false, due: { to: "today" } }, "tasks")!;
 	const hits = tasks.filter((t) => predicate(t as Row));
-	check("dagens oppgaver: antall", hits.length, 2);
-	ok("utelater fullført", !hits.some((t) => t.done));
-	ok("utelater fremtidige", !hits.some((t) => (t.due ?? 0) > T));
-	ok("utelater uten frist", !hits.some((t) => t.due === undefined));
+	check("due today: count", hits.length, 2);
+	ok("excludes done", !hits.some((t) => t.done));
+	ok("excludes future", !hits.some((t) => (t.due ?? 0) > T));
+	ok("excludes undated", !hits.some((t) => t.due === undefined));
 
 	const sorter = compileSort(["priority desc", "due asc"], "tasks")!;
 	hits.sort((a, b) => sorter(a as Row, b as Row));
-	check("sortert: prioritet først", hits[0].text, "Forfalt lekse");
+	check("sorted: priority first", hits[0].text, "Overdue homework");
 }
 
 // "Alle åpne oppgaver"
 {
 	const predicate = compileFilter({ done: false }, "tasks")!;
-	check("alle åpne", tasks.filter((t) => predicate(t as Row)).length, 5);
+	check("all open", tasks.filter((t) => predicate(t as Row)).length, 5);
 }
 
 // "Neste 7 dager": due >= today AND due <= today + 7d
 {
 	const predicate = compileFilter({ done: false, due: { from: "today", to: "today+7d" } }, "tasks")!;
 	const hits = tasks.filter((t) => predicate(t as Row));
-	check("neste 7 dager: antall", hits.length, 2);
-	ok("dag 10 utelatt", !hits.some((t) => t.text.includes("10 dager")));
+	check("next 7 days: count", hits.length, 2);
+	ok("day 10 excluded", !hits.some((t) => t.text.includes("10 dager")));
 }
 
 // Overdue keyword
 {
 	const predicate = compileFilter({ done: false, due: "overdue" }, "tasks")!;
 	const hits = tasks.filter((t) => predicate(t as Row));
-	check("forfalt", hits.map((t) => t.text), ["Forfalt lekse"]);
+	check("overdue", hits.map((t) => t.text), ["Overdue homework"]);
 }
 
-console.log("\nAggregater");
+console.log("\nAggregates");
 {
 	const count = compileAggregator("count", "tasks");
 	check("count", count(tasks as Row[]), 6);
@@ -179,73 +179,73 @@ console.log("\nAggregater");
 
 // ---------------------------------------------------------------- sorting
 
-console.log("\nSortering");
+console.log("\nSorting");
 {
 	const sorter = compileSort("due asc", "tasks")!;
 	const sorted = [...tasks].sort((a, b) => sorter(a as Row, b as Row));
-	check("uten frist havner sist", sorted[sorted.length - 1].text, "Uten frist");
+	check("undated sorts last", sorted[sorted.length - 1].text, "No deadline");
 
 	const desc = compileSort("due desc", "tasks")!;
 	const sortedDesc = [...tasks].sort((a, b) => desc(a as Row, b as Row));
-	check("uten frist havner sist også synkende", sortedDesc[sortedDesc.length - 1].text, "Uten frist");
+	check("undated sorts last descending too", sortedDesc[sortedDesc.length - 1].text, "No deadline");
 }
 
 // --------------------------------------------- goals & frontmatter dates
 
-console.log("\nMål og frontmatter-datoer");
+console.log("\nGoals and frontmatter dates");
 {
-	// Obsidian's YAML parser turns an unquoted `frist: 2026-11-21` into a Date,
+	// Obsidian's YAML parser turns an unquoted `due: 2026-11-21` into a Date,
 	// but a quoted one stays a string. Both must behave identically.
 	const asDate = new Date(Date.UTC(2026, 10, 21));
-	check("Date-objekt", coerceDayNum(asDate), parseDate("2026-11-21"));
-	check("ISO-streng", coerceDayNum("2026-11-21"), parseDate("2026-11-21"));
-	check("dagnummer passerer gjennom", coerceDayNum(20279), 20279);
-	check("tomt felt", coerceDayNum(undefined), undefined);
-	check("ugyldig Date", coerceDayNum(new Date("tull")), undefined);
+	check("Date object", coerceDayNum(asDate), parseDate("2026-11-21"));
+	check("ISO string", coerceDayNum("2026-11-21"), parseDate("2026-11-21"));
+	check("day number passes through", coerceDayNum(20279), 20279);
+	check("missing field", coerceDayNum(undefined), undefined);
+	check("invalid Date", coerceDayNum(new Date("tull")), undefined);
 
 	const goals = [
-		{ path: "Mål/Eksamen.md", name: "Eksamen R2", folder: "Mål", mtime: 0, ctime: 0, size: 0,
-			frontmatter: { type: "mål", frist: new Date(Date.UTC(2026, 10, 21)) }, tags: [], taskCount: 5, openTaskCount: 2 },
-		{ path: "Mål/Innlevering.md", name: "Særemne", folder: "Mål", mtime: 0, ctime: 0, size: 0,
-			frontmatter: { type: "mål", frist: new Date(Date.UTC(2026, 10, 3)) }, tags: [], taskCount: 0, openTaskCount: 0 },
-		{ path: "Mål/Fjern.md", name: "Fagbrev", folder: "Mål", mtime: 0, ctime: 0, size: 0,
-			frontmatter: { type: "mål", frist: new Date(Date.UTC(2027, 4, 1)) }, tags: [], taskCount: 0, openTaskCount: 0 },
-		{ path: "Mål/Utenfrist.md", name: "Uten frist", folder: "Mål", mtime: 0, ctime: 0, size: 0,
-			frontmatter: { type: "mål" }, tags: [], taskCount: 0, openTaskCount: 0 },
+		{ path: "Goals/Eksamen.md", name: "Exam", folder: "Goals", mtime: 0, ctime: 0, size: 0,
+			frontmatter: { type: "goal", frist: new Date(Date.UTC(2026, 10, 21)) }, tags: [], taskCount: 5, openTaskCount: 2 },
+		{ path: "Goals/Innlevering.md", name: "Essay", folder: "Goals", mtime: 0, ctime: 0, size: 0,
+			frontmatter: { type: "goal", frist: new Date(Date.UTC(2026, 10, 3)) }, tags: [], taskCount: 0, openTaskCount: 0 },
+		{ path: "Goals/Fjern.md", name: "Certificate", folder: "Goals", mtime: 0, ctime: 0, size: 0,
+			frontmatter: { type: "goal", frist: new Date(Date.UTC(2027, 4, 1)) }, tags: [], taskCount: 0, openTaskCount: 0 },
+		{ path: "Goals/Utenfrist.md", name: "No deadline", folder: "Goals", mtime: 0, ctime: 0, size: 0,
+			frontmatter: { type: "goal" }, tags: [], taskCount: 0, openTaskCount: 0 },
 	] as unknown as Row[];
 
 	// Chronological, not alphabetical by weekday name.
 	const byDeadline = compileSort("frist asc", "files")!;
 	const sorted = [...goals].sort(byDeadline);
 	check(
-		"frontmatter-datoer sorterer kronologisk",
+		"frontmatter dates sort chronologically",
 		sorted.map((g) => (g as { name: string }).name),
-		["Særemne", "Eksamen R2", "Fagbrev", "Uten frist"],
+		["Essay", "Exam", "Certificate", "No deadline"],
 	);
 
 	// A date expression against a frontmatter field whose name we cannot know
 	// at compile time.
 	const inNovember = compileFilter(
-		{ type: "mål", frist: { from: "2026-11-01", to: "2026-11-30" } },
+		{ type: "goal", frist: { from: "2026-11-01", to: "2026-11-30" } },
 		"files",
 	)!;
 	check(
-		"intervall på frontmatter-dato",
+		"range on a frontmatter date",
 		goals.filter((g) => inNovember(g)).map((g) => (g as { name: string }).name),
-		["Eksamen R2", "Særemne"],
+		["Exam", "Essay"],
 	);
 
 	const overdue = compileFilter({ frist: "overdue" }, "files")!;
-	check("forfalt-nøkkelord på frontmatter", goals.filter((g) => overdue(g)).length, 0);
+	check("overdue keyword on frontmatter", goals.filter((g) => overdue(g)).length, 0);
 
 	// A plain string field must not be hijacked by the date machinery.
-	const notADate = compileFilter({ type: "mål" }, "files")!;
-	check("tekstfelt uberørt", goals.filter((g) => notADate(g)).length, 4);
+	const notADate = compileFilter({ type: "goal" }, "files")!;
+	check("string field untouched", goals.filter((g) => notADate(g)).length, 4);
 }
 
 // ------------------------------------------------------------- benchmark
 
-console.log("\nYtelse");
+console.log("\nPerformance");
 {
 	const SIZE = 20_000;
 	const lines: string[] = [];
@@ -253,19 +253,19 @@ console.log("\nYtelse");
 		const due = formatISO(T - 200 + (i % 400));
 		const prio = ["🔺", "⏫", "🔼", "", "🔽"][i % 5];
 		const state = i % 3 === 0 ? "x" : " ";
-		lines.push(`- [${state}] Oppgave nummer ${i} 📅 ${due} ${prio} #emne${i % 20}`);
+		lines.push(`- [${state}] Task number ${i} 📅 ${due} ${prio} #topic${i % 20}`);
 	}
 
 	const parseStart = performance.now();
 	const big: PulsTask[] = [];
 	for (let i = 0; i < SIZE; i++) {
 		const status = i % 3 === 0 ? "x" : " ";
-		const t = parseTaskLine(lines[i], listItem(i, status), `Skole/Fag${i % 50}.md`, `Fag${i % 50}`, `Skole/Fag${i % 50}`);
+		const t = parseTaskLine(lines[i], listItem(i, status), `School/Subject${i % 50}.md`, `Subject${i % 50}`, `School/Subject${i % 50}`);
 		if (t) big.push(t);
 	}
 	const parseMs = performance.now() - parseStart;
-	check("alle ble parset", big.length, SIZE);
-	console.log(`  parsing:  ${SIZE} oppgaver på ${parseMs.toFixed(0)} ms  (${(parseMs / SIZE * 1000).toFixed(1)} µs/oppgave)`);
+	check("all parsed", big.length, SIZE);
+	console.log(`  parse:  ${SIZE} tasks in ${parseMs.toFixed(0)} ms  (${(parseMs / SIZE * 1000).toFixed(1)} µs/task)`);
 
 	const predicate = compileFilter({ done: false, due: { to: "today" } }, "tasks")!;
 	const sorter = compileSort(["priority desc", "due asc"], "tasks")!;
@@ -282,9 +282,9 @@ console.log("\nYtelse");
 		lastCount = hits.length;
 	}
 	const queryMs = (performance.now() - queryStart) / ROUNDS;
-	console.log(`  spørring: ${lastCount} treff av ${SIZE} + sortering på ${queryMs.toFixed(2)} ms`);
-	ok("en spørring holder seg under 16 ms (én skjermoppdatering)", queryMs < 16);
+	console.log(`  query:  ${lastCount} of ${SIZE} matched + sorted in ${queryMs.toFixed(2)} ms`);
+	ok("one query stays under 16 ms (a single frame)", queryMs < 16);
 }
 
-console.log(`\n${passed} bestått, ${failed} feilet\n`);
+console.log(`\n${passed} passed, ${failed} failed\n`);
 process.exit(failed === 0 ? 0 : 1);

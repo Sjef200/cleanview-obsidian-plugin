@@ -58,10 +58,10 @@ export interface PulsFile {
 export const PRIORITY_NONE = 2;
 
 export const PRIORITY_LABELS: Record<number, string> = {
-	5: "Høyest",
-	4: "Høy",
-	3: "Middels",
+	5: "Highest",
+	4: "High",
+	3: "Medium",
 	2: "Normal",
-	1: "Lav",
-	0: "Lavest",
+	1: "Low",
+	0: "Lowest",
 };

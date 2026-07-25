@@ -3,16 +3,16 @@
  *
  *   view: countdown
  *   source: files
- *   filter: { type: mål }
- *   date: frist          # optional; auto-detected when omitted
- *   sort: [frist asc]
+ *   filter: { type: goal }
+ *   date: due            # optional; auto-detected when omitted
+ *   sort: [due asc]
  *
  * Per the form heuristic this is a stat tile, not a chart: the number *is* the
  * visualisation. Urgency is shown with an icon and a word as well as a colour,
  * so the state never rests on hue alone.
  */
 
-import { coerceDayNum, formatLongNb, today } from "../core/dates";
+import { coerceDayNum, formatLong, today } from "../core/dates";
 import type { PulsFile } from "../core/types";
 import { type Row, accessor } from "../query/fields";
 import type { BlockConfig, QueryResult } from "../query/query";
@@ -20,8 +20,9 @@ import { emptyState, errorState, openFileAt, renderCapped, sectionHeader } from 
 import type { ViewContext } from "./task-view";
 
 /** Frontmatter keys checked, in order, when `date:` is not given. */
-const DATE_CANDIDATES = ["frist", "deadline", "due", "dato", "date", "mål", "target"];
-const START_CANDIDATES = ["startet", "start", "fra", "begynt"];
+/** Checked in order when `date:` is omitted. Includes a few Norwegian keys. */
+const DATE_CANDIDATES = ["due", "deadline", "date", "target", "frist", "dato"];
+const START_CANDIDATES = ["start", "started", "from", "startet"];
 
 interface Urgency {
 	cls: string;
@@ -30,10 +31,10 @@ interface Urgency {
 }
 
 function urgencyFor(daysLeft: number): Urgency {
-	if (daysLeft < 0) return { cls: "is-overdue", icon: "⚠", label: "Forfalt" };
-	if (daysLeft === 0) return { cls: "is-today", icon: "●", label: "I dag" };
-	if (daysLeft <= 14) return { cls: "is-soon", icon: "▲", label: "Snart" };
-	return { cls: "is-ahead", icon: "○", label: "På vei" };
+	if (daysLeft < 0) return { cls: "is-overdue", icon: "⚠", label: "Overdue" };
+	if (daysLeft === 0) return { cls: "is-today", icon: "●", label: "Today" };
+	if (daysLeft <= 14) return { cls: "is-soon", icon: "▲", label: "Soon" };
+	return { cls: "is-ahead", icon: "○", label: "On track" };
 }
 
 export function renderCountdown(
@@ -45,7 +46,7 @@ export function renderCountdown(
 	sectionHeader(container, config.title);
 
 	if (result.rows.length === 0) {
-		emptyState(container, "Ingen mål passer filteret.");
+		emptyState(container, "No goals match this filter.");
 		return;
 	}
 
@@ -53,7 +54,7 @@ export function renderCountdown(
 	if (!dateField) {
 		errorState(
 			container,
-			`Fant ingen datofelt. Legg til «frist:» i frontmatter, eller sett «date: <felt>» i blokken.`,
+			"No date field found. Add a due: key to the note frontmatter, or set date: <field> in this block.",
 		);
 		return;
 	}
@@ -113,7 +114,7 @@ function renderCard(
 	const badge = meta.createSpan({ cls: "puls-countdown-badge" });
 	badge.createSpan({ cls: "puls-countdown-icon", text: urgency.icon });
 	badge.createSpan({ text: urgency.label });
-	meta.createSpan({ cls: "puls-countdown-date", text: formatLongNb(deadline) });
+	meta.createSpan({ cls: "puls-countdown-date", text: formatLong(deadline) });
 
 	// Elapsed share of the run-up, when we know when it started.
 	if (start !== undefined && deadline > start) {
@@ -123,7 +124,7 @@ function renderCard(
 		bar.style.setProperty("--puls-progress", `${Math.round(elapsed * 100)}%`);
 		track.createSpan({
 			cls: "puls-progress-label",
-			text: `${Math.round(elapsed * 100)} % av tiden brukt`,
+			text: `${Math.round(elapsed * 100)}% of the time used`,
 		});
 	}
 
@@ -133,7 +134,7 @@ function renderCard(
 		const done = file.taskCount - file.openTaskCount;
 		body.createDiv({
 			cls: "puls-countdown-steps",
-			text: `${done} av ${file.taskCount} steg ferdig`,
+			text: `${done} of ${file.taskCount} steps done`,
 		});
 	}
 }
@@ -158,7 +159,7 @@ function detectField(rows: Row[], source: BlockConfig["source"], candidates: str
 
 /** The unit under the figure. Exported for the tests. */
 export function unitLabel(daysLeft: number): string {
-	if (daysLeft === 0) return "i dag";
-	if (daysLeft < 0) return daysLeft === -1 ? "dag siden" : "dager siden";
-	return daysLeft === 1 ? "dag igjen" : "dager igjen";
+	if (daysLeft === 0) return "today";
+	if (daysLeft < 0) return daysLeft === -1 ? "day ago" : "days ago";
+	return daysLeft === 1 ? "day left" : "days left";
 }

@@ -5,6 +5,8 @@
  *   - Tasks plugin emoji shorthand:  📅 2026-07-11  ⏫  🔁 every week
  *   - Dataview inline fields:        [due:: 2026-07-11]  (priority:: high)
  *
+ * A few Norwegian field names (frist, prioritet) are accepted as aliases.
+ *
  * Both are stripped from the display text, so a task written either way renders
  * cleanly. Parsing is a single pass per line with precompiled regexes; no
  * allocation happens for lines without metadata.

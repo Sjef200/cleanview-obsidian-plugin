@@ -23,7 +23,7 @@ const DONE_DATE = /\s*✅\s*\d{4}-\d{2}-\d{2}/u;
 export async function toggleTaskInFile(app: App, task: PulsTask): Promise<void> {
 	const file = app.vault.getFileByPath(task.path);
 	if (!(file instanceof TFile)) {
-		new Notice(`Puls: fant ikke «${task.path}»`);
+		new Notice(`Puls: could not find "${task.path}"`);
 		return;
 	}
 
@@ -34,7 +34,7 @@ export async function toggleTaskInFile(app: App, task: PulsTask): Promise<void> 
 		const index = locateTask(lines, task);
 
 		if (index === null) {
-			failure = "Oppgaven har flyttet seg siden siden ble tegnet. Ingenting ble endret.";
+			failure = "That task moved since the view was rendered. Nothing was changed.";
 			return data;
 		}
 

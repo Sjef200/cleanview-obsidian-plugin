@@ -9,7 +9,7 @@
 import type { App, Component } from "obsidian";
 import type { PulsTask } from "../core/types";
 import { PRIORITY_LABELS, PRIORITY_NONE } from "../core/types";
-import { formatISO, formatRelativeNb, today } from "../core/dates";
+import { formatISO, formatRelativeDay, today } from "../core/dates";
 import type { BlockConfig, QueryResult } from "../query/query";
 import type { Group } from "../query/sort";
 import { emptyState, openFileAt, renderCapped, renderInline, sectionHeader } from "./render-utils";
@@ -32,7 +32,7 @@ export function renderTasks(
 	sectionHeader(container, config.title);
 
 	if (result.rows.length === 0) {
-		emptyState(container, "Ingen oppgaver passer filteret.");
+		emptyState(container, "No tasks match this filter.");
 		return;
 	}
 
@@ -80,7 +80,7 @@ function renderTask(
 
 	const checkbox = row.createEl("input", { type: "checkbox", cls: "puls-check" });
 	checkbox.checked = task.done;
-	checkbox.setAttr("aria-label", task.done ? "Merk som ikke fullført" : "Merk som fullført");
+	checkbox.setAttr("aria-label", task.done ? "Mark as not done" : "Mark as done");
 	checkbox.addEventListener("click", (event) => {
 		event.preventDefault();
 		event.stopPropagation();
@@ -92,7 +92,7 @@ function renderTask(
 
 	const body = row.createDiv({ cls: "puls-task-body" });
 	const text = body.createDiv({ cls: "puls-task-text" });
-	renderInline(ctx.app, ctx.component, text, task.text || "(tom oppgave)", ctx.sourcePath);
+	renderInline(ctx.app, ctx.component, text, task.text || "(empty task)", ctx.sourcePath);
 
 	const meta = body.createDiv({ cls: "puls-meta" });
 
@@ -107,13 +107,13 @@ function renderTask(
 		const overdue = !task.done && task.due < today();
 		const chip = meta.createSpan({
 			cls: `puls-chip puls-due${overdue ? " is-overdue" : ""}`,
-			text: formatRelativeNb(task.due),
+			text: formatRelativeDay(task.due),
 		});
 		chip.setAttr("title", formatISO(task.due));
 	}
 
 	if (show.has("scheduled") && task.scheduled !== undefined) {
-		meta.createSpan({ cls: "puls-chip", text: `planlagt ${formatRelativeNb(task.scheduled)}` });
+		meta.createSpan({ cls: "puls-chip", text: `scheduled ${formatRelativeDay(task.scheduled)}` });
 	}
 
 	if (show.has("file")) {
