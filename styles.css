@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Puls
+   CleanView
 
    Chrome (surfaces, gridlines, ink) is inherited from whatever Obsidian theme
    the user runs, via Obsidian's own CSS variables.
@@ -10,79 +10,79 @@
    categories are indistinguishable is worse than one that ignores the theme.
    ========================================================================== */
 
-.puls-block {
-	--puls-surface: var(--background-primary);
-	--puls-grid: var(--background-modifier-border);
-	--puls-ink: var(--text-normal);
-	--puls-muted: var(--text-muted);
+.cleanview-block {
+	--cleanview-surface: var(--background-primary);
+	--cleanview-grid: var(--background-modifier-border);
+	--cleanview-ink: var(--text-normal);
+	--cleanview-muted: var(--text-muted);
 
 	/* Categorical palette — light mode steps. */
-	--puls-series-1: #2a78d6;
-	--puls-series-2: #eb6834;
-	--puls-series-3: #1baf7a;
-	--puls-series-4: #eda100;
-	--puls-series-5: #e87ba4;
-	--puls-series-6: #008300;
-	--puls-series-7: #4a3aa7;
-	--puls-series-8: #e34948;
+	--cleanview-series-1: #2a78d6;
+	--cleanview-series-2: #eb6834;
+	--cleanview-series-3: #1baf7a;
+	--cleanview-series-4: #eda100;
+	--cleanview-series-5: #e87ba4;
+	--cleanview-series-6: #008300;
+	--cleanview-series-7: #4a3aa7;
+	--cleanview-series-8: #e34948;
 
 	/* Status colours are reserved and never reused as a series colour. */
-	--puls-critical: #d03b3b;
-	--puls-good: #0ca30c;
+	--cleanview-critical: #d03b3b;
+	--cleanview-good: #0ca30c;
 	/* The mark colour for "soon". Used as a 3px border, where icon + label
 	   carry the meaning, so it need not clear a text contrast bar. */
-	--puls-warning: #fab219;
+	--cleanview-warning: #fab219;
 	/* Warning amber is 1.8:1 on white and unreadable as text, so the text
 	   variant is a darker step of the same hue (5.9:1). */
-	--puls-warning-text: #8a5a00;
+	--cleanview-warning-text: #8a5a00;
 
 	margin-block: 0.75em;
 }
 
-.theme-dark .puls-block {
+.theme-dark .cleanview-block {
 	/* The same eight hues, re-stepped for a dark surface. Not an auto-flip. */
-	--puls-series-1: #3987e5;
-	--puls-series-2: #d95926;
-	--puls-series-3: #199e70;
-	--puls-series-4: #c98500;
-	--puls-series-5: #d55181;
-	--puls-series-6: #008300;
-	--puls-series-7: #9085e9;
-	--puls-series-8: #e66767;
+	--cleanview-series-1: #3987e5;
+	--cleanview-series-2: #d95926;
+	--cleanview-series-3: #199e70;
+	--cleanview-series-4: #c98500;
+	--cleanview-series-5: #d55181;
+	--cleanview-series-6: #008300;
+	--cleanview-series-7: #9085e9;
+	--cleanview-series-8: #e66767;
 
-	--puls-critical: #e66767;
-	--puls-good: #0ca30c;
-	--puls-warning: #fab219;
+	--cleanview-critical: #e66767;
+	--cleanview-good: #0ca30c;
+	--cleanview-warning: #fab219;
 	/* On the dark surface the amber itself clears 9:1, so no darker step. */
-	--puls-warning-text: #fab219;
+	--cleanview-warning-text: #fab219;
 }
 
 /* ------------------------------------------------------------ common bits */
 
-.puls-title {
+.cleanview-title {
 	font-size: var(--font-ui-medium);
 	font-weight: 600;
 	color: var(--text-normal);
 	margin-bottom: 0.5em;
 }
 
-.puls-empty {
+.cleanview-empty {
 	color: var(--text-faint);
 	font-size: var(--font-ui-small);
 	padding: 0.5em 0;
 }
 
-.puls-footnote {
+.cleanview-footnote {
 	color: var(--text-faint);
 	font-size: var(--font-ui-smaller);
 	margin-top: 0.4em;
 }
 
-.puls-error {
+.cleanview-error {
 	display: flex;
 	gap: 0.6em;
 	align-items: baseline;
-	border-left: 3px solid var(--puls-critical);
+	border-left: 3px solid var(--cleanview-critical);
 	background: var(--background-secondary);
 	padding: 0.6em 0.8em;
 	border-radius: var(--radius-s);
@@ -90,13 +90,13 @@
 	color: var(--text-normal);
 }
 
-.puls-error-badge {
+.cleanview-error-badge {
 	font-weight: 600;
-	color: var(--puls-critical);
+	color: var(--cleanview-critical);
 	flex-shrink: 0;
 }
 
-.puls-more {
+.cleanview-more {
 	background: none;
 	border: none;
 	box-shadow: none;
@@ -107,12 +107,12 @@
 	text-align: left;
 }
 
-.puls-more:hover {
+.cleanview-more:hover {
 	color: var(--text-normal);
 	text-decoration: underline;
 }
 
-.puls-chip {
+.cleanview-chip {
 	display: inline-flex;
 	align-items: center;
 	font-size: var(--font-ui-smaller);
@@ -123,18 +123,18 @@
 	white-space: nowrap;
 }
 
-.puls-muted {
+.cleanview-muted {
 	color: var(--text-faint);
 }
 
 /* ---------------------------------------------------------------- tasks */
 
-.puls-tasks {
+.cleanview-tasks {
 	display: flex;
 	flex-direction: column;
 }
 
-.puls-task {
+.cleanview-task {
 	display: flex;
 	align-items: flex-start;
 	gap: 0.55em;
@@ -142,22 +142,22 @@
 	border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.puls-task:last-child {
+.cleanview-task:last-child {
 	border-bottom: none;
 }
 
-.puls-task.is-done .puls-task-text {
+.cleanview-task.is-done .cleanview-task-text {
 	color: var(--text-faint);
 	text-decoration: line-through;
 }
 
-.puls-check {
+.cleanview-check {
 	margin-top: 0.25em;
 	flex-shrink: 0;
 	cursor: pointer;
 }
 
-.puls-task-body {
+.cleanview-task-body {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
@@ -166,18 +166,18 @@
 	flex: 1;
 }
 
-.puls-task-text {
+.cleanview-task-text {
 	flex: 1 1 60%;
 	min-width: 0;
 	line-height: 1.45;
 }
 
-.puls-task-text p {
+.cleanview-task-text p {
 	margin: 0;
 	display: inline;
 }
 
-.puls-meta {
+.cleanview-meta {
 	display: flex;
 	gap: 0.35em;
 	flex-wrap: wrap;
@@ -186,42 +186,42 @@
 
 /* Overdue is the one place a status colour appears in a list, and it is paired
    with the date text so the colour is never the only signal. */
-.puls-due.is-overdue {
-	color: var(--puls-critical);
+.cleanview-due.is-overdue {
+	color: var(--cleanview-critical);
 	background: transparent;
 	font-weight: 600;
 }
 
-.puls-prio {
+.cleanview-prio {
 	font-weight: 600;
 }
 
-.puls-prio-5,
-.puls-prio-4 {
-	color: var(--puls-critical);
+.cleanview-prio-5,
+.cleanview-prio-4 {
+	color: var(--cleanview-critical);
 }
 
-.puls-prio-1,
-.puls-prio-0 {
+.cleanview-prio-1,
+.cleanview-prio-0 {
 	color: var(--text-faint);
 }
 
-.puls-file,
-.puls-link {
+.cleanview-file,
+.cleanview-link {
 	color: var(--text-accent);
 	cursor: pointer;
 }
 
-.puls-file:hover,
-.puls-link:hover {
+.cleanview-file:hover,
+.cleanview-link:hover {
 	text-decoration: underline;
 }
 
-.puls-group {
+.cleanview-group {
 	margin-bottom: 0.9em;
 }
 
-.puls-group-head {
+.cleanview-group-head {
 	display: flex;
 	align-items: baseline;
 	gap: 0.5em;
@@ -230,13 +230,13 @@
 	margin-bottom: 0.2em;
 }
 
-.puls-group-label {
+.cleanview-group-label {
 	font-weight: 600;
 	font-size: var(--font-ui-small);
 	color: var(--text-normal);
 }
 
-.puls-count {
+.cleanview-count {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-faint);
 	font-variant-numeric: tabular-nums;
@@ -244,17 +244,17 @@
 
 /* ---------------------------------------------------------------- table */
 
-.puls-table-wrap {
+.cleanview-table-wrap {
 	overflow-x: auto;
 }
 
-.puls-table {
+.cleanview-table {
 	width: 100%;
 	border-collapse: collapse;
 	font-size: var(--font-ui-small);
 }
 
-.puls-table th {
+.cleanview-table th {
 	text-align: left;
 	font-weight: 600;
 	color: var(--text-muted);
@@ -264,33 +264,33 @@
 	white-space: nowrap;
 }
 
-.puls-table td {
+.cleanview-table td {
 	padding: 0.35em 0.6em 0.35em 0;
 	border-bottom: 1px solid var(--background-modifier-border);
 	vertical-align: baseline;
 }
 
-.puls-table tr:last-child td {
+.cleanview-table tr:last-child td {
 	border-bottom: none;
 }
 
-.puls-table p {
+.cleanview-table p {
 	margin: 0;
 	display: inline;
 }
 
-.puls-align-right {
+.cleanview-align-right {
 	text-align: right;
 	font-variant-numeric: tabular-nums;
 }
 
-.puls-align-center {
+.cleanview-align-center {
 	text-align: center;
 }
 
 /* ------------------------------------------------------------- progress */
 
-.puls-progress {
+.cleanview-progress {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -298,25 +298,25 @@
 	min-width: 80px;
 }
 
-.puls-progress-bar {
+.cleanview-progress-bar {
 	flex: 1;
 	height: 6px;
 	border-radius: 3px;
 	/* Unfilled track is a lighter step of the fill's own ramp. */
-	background: color-mix(in srgb, var(--puls-series-1) 18%, transparent);
+	background: color-mix(in srgb, var(--cleanview-series-1) 18%, transparent);
 	overflow: hidden;
 }
 
-.puls-progress-bar::after {
+.cleanview-progress-bar::after {
 	content: "";
 	display: block;
 	height: 100%;
-	width: var(--puls-progress, 0%);
+	width: var(--cleanview-progress, 0%);
 	border-radius: 3px;
-	background: var(--puls-series-1);
+	background: var(--cleanview-series-1);
 }
 
-.puls-progress-label {
+.cleanview-progress-label {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 	font-variant-numeric: tabular-nums;
@@ -325,7 +325,7 @@
 
 /* ----------------------------------------------------------------- stat */
 
-.puls-stat {
+.cleanview-stat {
 	display: inline-flex;
 	flex-direction: column;
 	gap: 0.15em;
@@ -336,12 +336,12 @@
 	min-width: 120px;
 }
 
-.puls-stat-label {
+.cleanview-stat-label {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
 
-.puls-stat-value {
+.cleanview-stat-value {
 	display: flex;
 	align-items: baseline;
 	gap: 0.15em;
@@ -351,13 +351,13 @@
 	color: var(--text-normal);
 }
 
-.puls-stat-affix {
+.cleanview-stat-affix {
 	font-size: 0.5em;
 	font-weight: 500;
 	color: var(--text-muted);
 }
 
-.puls-stat-goal {
+.cleanview-stat-goal {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-faint);
 	font-variant-numeric: tabular-nums;
@@ -365,13 +365,13 @@
 
 /* ------------------------------------------------------------ countdown */
 
-.puls-countdowns {
+.cleanview-countdowns {
 	display: flex;
 	flex-direction: column;
 	gap: 0.5em;
 }
 
-.puls-countdown {
+.cleanview-countdown {
 	display: flex;
 	align-items: center;
 	gap: 1em;
@@ -383,12 +383,12 @@
 }
 
 /* The left edge reinforces urgency; the icon and word inside carry it. */
-.puls-countdown.is-overdue { border-left-color: var(--puls-critical); }
-.puls-countdown.is-today { border-left-color: var(--puls-critical); }
-.puls-countdown.is-soon { border-left-color: var(--puls-warning); }
-.puls-countdown.is-ahead { border-left-color: var(--background-modifier-border); }
+.cleanview-countdown.is-overdue { border-left-color: var(--cleanview-critical); }
+.cleanview-countdown.is-today { border-left-color: var(--cleanview-critical); }
+.cleanview-countdown.is-soon { border-left-color: var(--cleanview-warning); }
+.cleanview-countdown.is-ahead { border-left-color: var(--background-modifier-border); }
 
-.puls-countdown-figure {
+.cleanview-countdown-figure {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -397,19 +397,19 @@
 	flex-shrink: 0;
 }
 
-.puls-countdown-days {
+.cleanview-countdown-days {
 	font-size: 2.1em;
 	font-weight: 600;
 	line-height: 1;
 	color: var(--text-normal);
 }
 
-.puls-countdown-unit {
+.cleanview-countdown-unit {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-muted);
 }
 
-.puls-countdown-body {
+.cleanview-countdown-body {
 	flex: 1;
 	min-width: 0;
 	display: flex;
@@ -417,17 +417,17 @@
 	gap: 0.25em;
 }
 
-.puls-countdown-title {
+.cleanview-countdown-title {
 	font-weight: 600;
 	color: var(--text-normal);
 	cursor: pointer;
 }
 
-.puls-countdown-title:hover {
+.cleanview-countdown-title:hover {
 	text-decoration: underline;
 }
 
-.puls-countdown-meta {
+.cleanview-countdown-meta {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: baseline;
@@ -436,23 +436,23 @@
 	color: var(--text-muted);
 }
 
-.puls-countdown-badge {
+.cleanview-countdown-badge {
 	display: inline-flex;
 	align-items: baseline;
 	gap: 0.3em;
 	font-weight: 600;
 }
 
-.is-overdue .puls-countdown-badge,
-.is-today .puls-countdown-badge { color: var(--puls-critical); }
-.is-soon .puls-countdown-badge { color: var(--puls-warning-text); }
-.is-ahead .puls-countdown-badge { color: var(--text-faint); }
+.is-overdue .cleanview-countdown-badge,
+.is-today .cleanview-countdown-badge { color: var(--cleanview-critical); }
+.is-soon .cleanview-countdown-badge { color: var(--cleanview-warning-text); }
+.is-ahead .cleanview-countdown-badge { color: var(--text-faint); }
 
-.puls-countdown-icon {
+.cleanview-countdown-icon {
 	font-size: 0.9em;
 }
 
-.puls-countdown-steps {
+.cleanview-countdown-steps {
 	font-size: var(--font-ui-smaller);
 	color: var(--text-faint);
 	font-variant-numeric: tabular-nums;
@@ -460,47 +460,47 @@
 
 /* ---------------------------------------------------------------- chart */
 
-.puls-chart {
+.cleanview-chart {
 	position: relative;
 	width: 100%;
 }
 
-.puls-svg {
+.cleanview-svg {
 	display: block;
 	max-width: 100%;
 	overflow: visible;
 }
 
-.puls-axis-text {
+.cleanview-axis-text {
 	font-size: 11px;
 	font-family: var(--font-interface);
 }
 
-.puls-tabular {
+.cleanview-tabular {
 	font-variant-numeric: tabular-nums;
 }
 
-.puls-donut-total {
+.cleanview-donut-total {
 	font-size: 22px;
 	font-weight: 600;
 	font-family: var(--font-interface);
 }
 
-.puls-mark {
+.cleanview-mark {
 	transition: opacity 120ms ease;
 }
 
 /* The active mark is flagged from script, not by :hover — the pointer target is
    a transparent hit rectangle painted on top of the mark. */
-.puls-chart.has-active .puls-mark {
+.cleanview-chart.has-active .cleanview-mark {
 	opacity: 0.45;
 }
 
-.puls-chart .puls-mark.is-active {
+.cleanview-chart .cleanview-mark.is-active {
 	opacity: 1;
 }
 
-.puls-tooltip {
+.cleanview-tooltip {
 	position: absolute;
 	pointer-events: none;
 	opacity: 0;
@@ -516,34 +516,34 @@
 	transition: opacity 80ms ease;
 }
 
-.puls-tooltip.is-visible {
+.cleanview-tooltip.is-visible {
 	opacity: 1;
 }
 
-.puls-tooltip-head {
+.cleanview-tooltip-head {
 	font-weight: 600;
 	color: var(--text-normal);
 }
 
-.puls-tooltip-line {
+.cleanview-tooltip-line {
 	color: var(--text-muted);
 	font-variant-numeric: tabular-nums;
 }
 
-.puls-table-toggle {
+.cleanview-table-toggle {
 	margin-top: 0.2em;
 }
 
 /* ----------------------------------------------------------------- text */
 
-.puls-text {
+.cleanview-text {
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
 
 /* --------------------------------------------------------------- settings */
 
-.puls-about {
+.cleanview-about {
 	margin-top: 2em;
 	padding-top: 1em;
 	border-top: 1px solid var(--background-modifier-border);
@@ -554,18 +554,18 @@
 /* Forced-colours and reduced-motion users get the same information without
    relying on hue or animation. */
 @media (prefers-reduced-motion: reduce) {
-	.puls-mark,
-	.puls-tooltip {
+	.cleanview-mark,
+	.cleanview-tooltip {
 		transition: none;
 	}
 }
 
 @media (forced-colors: active) {
-	.puls-mark {
+	.cleanview-mark {
 		forced-color-adjust: none;
 	}
 
-	.puls-task {
+	.cleanview-task {
 		border-bottom: 1px solid CanvasText;
 	}
 }

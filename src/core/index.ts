@@ -19,7 +19,7 @@
  */
 
 import { type App, type CachedMetadata, type TFile, TFolder, getAllTags } from "obsidian";
-import type { PulsFile, PulsTask } from "./types";
+import type { CleanViewFile, CleanViewTask } from "./types";
 import { parseTaskLine } from "./task-parser";
 
 export type IndexListener = (changedPaths: ReadonlySet<string> | null) => void;
@@ -27,12 +27,12 @@ export type IndexListener = (changedPaths: ReadonlySet<string> | null) => void;
 export class VaultIndex {
 	private readonly app: App;
 
-	private readonly files = new Map<string, PulsFile>();
-	private readonly tasksByFile = new Map<string, PulsTask[]>();
+	private readonly files = new Map<string, CleanViewFile>();
+	private readonly tasksByFile = new Map<string, CleanViewTask[]>();
 
 	/** Flattened task list, rebuilt lazily after any change. */
-	private flatTasks: PulsTask[] | null = null;
-	private flatFiles: PulsFile[] | null = null;
+	private flatTasks: CleanViewTask[] | null = null;
+	private flatFiles: CleanViewFile[] | null = null;
 
 	private readonly listeners = new Set<IndexListener>();
 	private pendingPaths = new Set<string>();
@@ -48,9 +48,9 @@ export class VaultIndex {
 
 	// ---------------------------------------------------------------- queries
 
-	allTasks(): readonly PulsTask[] {
+	allTasks(): readonly CleanViewTask[] {
 		if (this.flatTasks === null) {
-			const out: PulsTask[] = [];
+			const out: CleanViewTask[] = [];
 			for (const tasks of this.tasksByFile.values()) {
 				for (const task of tasks) out.push(task);
 			}
@@ -59,7 +59,7 @@ export class VaultIndex {
 		return this.flatTasks;
 	}
 
-	allFiles(): readonly PulsFile[] {
+	allFiles(): readonly CleanViewFile[] {
 		if (this.flatFiles === null) this.flatFiles = [...this.files.values()];
 		return this.flatFiles;
 	}
@@ -103,7 +103,7 @@ export class VaultIndex {
 		const listItems = meta?.listItems;
 		const hasCheckbox = listItems?.some((item) => item.task !== undefined) ?? false;
 
-		let tasks: PulsTask[] = [];
+		let tasks: CleanViewTask[] = [];
 		if (hasCheckbox && listItems) {
 			// Only now do we need the actual text, so only now do we read.
 			const text = content ?? (await this.app.vault.cachedRead(file));
@@ -220,7 +220,7 @@ export class VaultIndex {
 			try {
 				listener(paths);
 			} catch (error) {
-				console.error("Puls: a dashboard block failed while updating", error);
+				console.error("CleanView: a dashboard block failed while updating", error);
 			}
 		}
 	}

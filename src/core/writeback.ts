@@ -14,16 +14,16 @@
  */
 
 import { type App, Notice, TFile } from "obsidian";
-import type { PulsTask } from "./types";
+import type { CleanViewTask } from "./types";
 import { formatISO, today } from "./dates";
 
 const CHECKBOX = /^(\s*(?:[-*+]|\d+[.)])\s+\[)(.)(]\s*)/;
 const DONE_DATE = /\s*✅\s*\d{4}-\d{2}-\d{2}/u;
 
-export async function toggleTaskInFile(app: App, task: PulsTask): Promise<void> {
+export async function toggleTaskInFile(app: App, task: CleanViewTask): Promise<void> {
 	const file = app.vault.getFileByPath(task.path);
 	if (!(file instanceof TFile)) {
-		new Notice(`Puls: could not find "${task.path}"`);
+		new Notice(`CleanView: could not find "${task.path}"`);
 		return;
 	}
 
@@ -42,7 +42,7 @@ export async function toggleTaskInFile(app: App, task: PulsTask): Promise<void> 
 		return lines.join("\n");
 	});
 
-	if (failure) new Notice(`Puls: ${failure}`, 6000);
+	if (failure) new Notice(`CleanView: ${failure}`, 6000);
 }
 
 /**
@@ -52,7 +52,7 @@ export async function toggleTaskInFile(app: App, task: PulsTask): Promise<void> 
  * identical checkbox line. Returns null when the match is ambiguous or absent,
  * which is treated as "do nothing".
  */
-function locateTask(lines: string[], task: PulsTask): number | null {
+function locateTask(lines: string[], task: CleanViewTask): number | null {
 	const expected = task.raw.trim();
 
 	if (matchesTask(lines[task.line], expected)) return task.line;

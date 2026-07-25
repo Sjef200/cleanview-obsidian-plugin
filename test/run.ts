@@ -12,7 +12,7 @@ import { parseTaskLine } from "../src/core/task-parser";
 import { compileFilter } from "../src/query/filter";
 import { compileSort } from "../src/query/sort";
 import { compileAggregator } from "../src/query/aggregate";
-import type { PulsTask } from "../src/core/types";
+import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
 
 let passed = 0;
@@ -45,7 +45,7 @@ function listItem(line: number, task: string): ListItemCache {
 	} as ListItemCache;
 }
 
-function parse(line: string, lineNo = 0): PulsTask {
+function parse(line: string, lineNo = 0): CleanViewTask {
 	const status = /\[(.)\]/.exec(line)?.[1] ?? " ";
 	const task = parseTaskLine(line, listItem(lineNo, status), "School/Matte.md", "Matte", "Skole");
 	if (!task) throw new Error(`could not parse: ${line}`);
@@ -123,7 +123,7 @@ console.log("\nTask parsing (Dataview dialect)");
 console.log("\nThe dashboard queries");
 
 const T = today();
-const tasks: PulsTask[] = [
+const tasks: CleanViewTask[] = [
 	parse("- [ ] Overdue homework 📅 " + formatISO(T - 3) + " ⏫"),
 	parse("- [ ] Due today 📅 " + formatISO(T)),
 	parse("- [ ] Test in 3 days 📅 " + formatISO(T + 3) + " 🔺"),
@@ -257,7 +257,7 @@ console.log("\nPerformance");
 	}
 
 	const parseStart = performance.now();
-	const big: PulsTask[] = [];
+	const big: CleanViewTask[] = [];
 	for (let i = 0; i < SIZE; i++) {
 		const status = i % 3 === 0 ? "x" : " ";
 		const t = parseTaskLine(lines[i], listItem(i, status), `School/Subject${i % 50}.md`, `Subject${i % 50}`, `School/Subject${i % 50}`);

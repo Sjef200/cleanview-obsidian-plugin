@@ -25,11 +25,11 @@ export interface Datum {
 const DONUT_MAX = 6;
 
 const CSS = {
-	surface: "var(--puls-surface)",
-	grid: "var(--puls-grid)",
-	muted: "var(--puls-muted)",
-	ink: "var(--puls-ink)",
-	series: (i: number) => `var(--puls-series-${(i % 8) + 1})`,
+	surface: "var(--cleanview-surface)",
+	grid: "var(--cleanview-grid)",
+	muted: "var(--cleanview-muted)",
+	ink: "var(--cleanview-ink)",
+	series: (i: number) => `var(--cleanview-series-${(i % 8) + 1})`,
 };
 
 // ---------------------------------------------------------------- horizontal bar
@@ -71,25 +71,25 @@ export function renderBar(
 
 		const label = svgEl(svg, "text", {
 			x: labelWidth, y: y + ROW / 2, fill: CSS.muted,
-			"text-anchor": "end", "dominant-baseline": "central", class: "puls-axis-text",
+			"text-anchor": "end", "dominant-baseline": "central", class: "cleanview-axis-text",
 		});
 		label.textContent = datum.label;
 		fitText(label, labelWidth - 4);
 
 		const mark = svgEl(svg, "path", {
 			d: barPath(area.x, barY, w, THICK, 4, true),
-			fill: CSS.series(0), class: "puls-mark",
+			fill: CSS.series(0), class: "cleanview-mark",
 		});
 
 		const value = svgEl(svg, "text", {
 			x: area.x + w + 8, y: y + ROW / 2, fill: CSS.muted,
-			"dominant-baseline": "central", class: "puls-axis-text puls-tabular",
+			"dominant-baseline": "central", class: "cleanview-axis-text cleanview-tabular",
 		});
 		value.textContent = formatValue(datum.value);
 
 		// Full-row hit target, so hovering the label works too.
 		const hit = svgEl(svg, "rect", {
-			x: 0, y, width, height: ROW, fill: "transparent", class: "puls-hit",
+			x: 0, y, width, height: ROW, fill: "transparent", class: "cleanview-hit",
 		});
 		bindTooltip(
 			hit, host, tooltip,
@@ -132,7 +132,7 @@ export function renderLine(
 		const label = svgEl(svg, "text", {
 			x: area.x - 8, y, fill: CSS.muted,
 			"text-anchor": "end", "dominant-baseline": "central",
-			class: "puls-axis-text puls-tabular",
+			class: "cleanview-axis-text cleanview-tabular",
 		});
 		label.textContent = formatValue(tick);
 	}
@@ -168,7 +168,7 @@ export function renderLine(
 		const label = svgEl(svg, "text", {
 			x: xAt(i), y: box.height - 8, fill: CSS.muted,
 			"text-anchor": i === 0 ? "start" : i === data.length - 1 ? "end" : "middle",
-			class: "puls-axis-text",
+			class: "cleanview-axis-text",
 		});
 		label.textContent = datum.label;
 	});
@@ -278,7 +278,7 @@ export function renderDonut(
 
 		const path = svgEl(svg, "path", {
 			d: arcPath(cx, cy, outer, inner, from, to),
-			fill: CSS.series(i), class: "puls-mark",
+			fill: CSS.series(i), class: "cleanview-mark",
 		});
 		bindTooltip(
 			path, host, tooltip,
@@ -292,14 +292,14 @@ export function renderDonut(
 	// Hero number in the hole: ink, never a series colour.
 	const totalText = svgEl(svg, "text", {
 		x: cx, y: cy - 4, fill: CSS.ink,
-		"text-anchor": "middle", "dominant-baseline": "central", class: "puls-donut-total",
+		"text-anchor": "middle", "dominant-baseline": "central", class: "cleanview-donut-total",
 	});
 	totalText.textContent = formatValue(total);
 
 	if (centreLabel) {
 		const sub = svgEl(svg, "text", {
 			x: cx, y: cy + 14, fill: CSS.muted,
-			"text-anchor": "middle", "dominant-baseline": "central", class: "puls-axis-text",
+			"text-anchor": "middle", "dominant-baseline": "central", class: "cleanview-axis-text",
 		});
 		sub.textContent = centreLabel;
 		fitText(sub, inner * 1.8);
@@ -315,14 +315,14 @@ export function renderDonut(
 		});
 		const label = svgEl(svg, "text", {
 			x: legendX + 18, y, fill: CSS.muted,
-			"dominant-baseline": "central", class: "puls-axis-text",
+			"dominant-baseline": "central", class: "cleanview-axis-text",
 		});
 		label.textContent = datum.label;
 		fitText(label, Math.max(40, width - legendX - 70));
 
 		const value = svgEl(svg, "text", {
 			x: width - 4, y, fill: CSS.muted, "text-anchor": "end",
-			"dominant-baseline": "central", class: "puls-axis-text puls-tabular",
+			"dominant-baseline": "central", class: "cleanview-axis-text cleanview-tabular",
 		});
 		value.textContent = formatValue(datum.value);
 	});

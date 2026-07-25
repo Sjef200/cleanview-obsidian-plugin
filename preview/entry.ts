@@ -40,7 +40,7 @@ function mount(id: string, kind: string, data: Datum[], width: number, title?: s
 	const host = document.getElementById(id);
 	if (!host) return;
 	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	svg.setAttribute("class", "puls-svg");
+	svg.setAttribute("class", "cleanview-svg");
 	host.appendChild(svg);
 	if (kind === "bar") renderBar(host, svg, data, width, tooltip, format);
 	else if (kind === "line") renderLine(host, svg, data, width, tooltip, format);

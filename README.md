@@ -1,13 +1,13 @@
-# Puls
+# CleanView
 
 Fast, fully local dashboards for [Obsidian](https://obsidian.md). Task lists,
-tables, key figures, countdowns and hand-drawn SVG charts, in a ` ```puls `
+tables, key figures, countdowns and hand-drawn SVG charts, in a ` ```cleanview `
 code block.
 
 Written to replace a Dataview + Tasks + Tracker stack in a vault where Dataview
 had become too slow to use.
 
-```puls
+```cleanview
 view: tasks
 title: Due today
 filter:
@@ -22,10 +22,10 @@ Dataview builds and maintains **its own** index of the vault, parallel to the
 one Obsidian already has, and re-runs each query through an interpreted query
 engine whenever anything changes.
 
-Puls does four things differently:
+CleanView does four things differently:
 
 1. **It reuses Obsidian's `metadataCache`.** Frontmatter, tags and checkbox
-   state are already parsed and in memory. Puls reads that structure instead of
+   state are already parsed and in memory. CleanView reads that structure instead of
    parsing markdown again.
 2. **It only reads files that actually contain tasks.** The cache reports which
    files have checkboxes before anything is read from disk. A vault of 5000
@@ -65,12 +65,12 @@ scrolled out of view are marked stale and catch up when they scroll back in.
 
 Not yet in the community plugin browser. To install manually, copy `main.js`,
 `manifest.json` and `styles.css` from a
-[release](../../releases) into `<vault>/.obsidian/plugins/puls/`, then enable
+[release](../../releases) into `<vault>/.obsidian/plugins/cleanview/`, then enable
 the plugin in *Settings → Community plugins*.
 
 ## Block reference
 
-Every block starts with ` ```puls ` and contains YAML.
+Every block starts with ` ```cleanview ` and contains YAML.
 
 ### Common keys
 

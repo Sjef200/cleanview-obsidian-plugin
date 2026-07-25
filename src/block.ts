@@ -1,5 +1,5 @@
 /**
- * One rendered ```puls block.
+ * One rendered ```cleanview block.
  *
  * Re-render policy, which is most of why dashboards stay responsive:
  *
@@ -22,7 +22,7 @@ import { renderTable } from "./views/table-view";
 import { renderTasks } from "./views/task-view";
 import { renderText } from "./views/text-view";
 
-export class PulsBlock extends MarkdownRenderChild {
+export class CleanViewBlock extends MarkdownRenderChild {
 	private config: BlockConfig | null = null;
 	private query: CompiledQuery | null = null;
 	private unsubscribe: (() => void) | null = null;
@@ -44,7 +44,7 @@ export class PulsBlock extends MarkdownRenderChild {
 	}
 
 	onload(): void {
-		this.containerEl.addClass("puls-block");
+		this.containerEl.addClass("cleanview-block");
 
 		try {
 			this.config = parseConfig(this.source);
@@ -122,7 +122,7 @@ export class PulsBlock extends MarkdownRenderChild {
 		this.containerEl.empty();
 
 		if (!this.index.ready) {
-			this.containerEl.createDiv({ cls: "puls-empty", text: "Building index…" });
+			this.containerEl.createDiv({ cls: "cleanview-empty", text: "Building index…" });
 			// build() notifies every listener when it finishes, so no polling.
 			this.renderedRevision = -1;
 			return;
@@ -153,7 +153,7 @@ export class PulsBlock extends MarkdownRenderChild {
 					break;
 			}
 		} catch (error) {
-			console.error("Puls: render failed", error);
+			console.error("CleanView: render failed", error);
 			errorState(this.containerEl, `Could not render this block: ${(error as Error).message}`);
 		}
 	}

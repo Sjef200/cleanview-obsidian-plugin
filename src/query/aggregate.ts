@@ -58,7 +58,7 @@ export function compileAggregator(spec: unknown, source: Source): Aggregator {
 			};
 		}
 		default:
-			console.warn(`Puls: unknown aggregate "${raw}", falling back to count`);
+			console.warn(`CleanView: unknown aggregate "${raw}", falling back to count`);
 			return (rows) => rows.length;
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Parses checkbox lines into PulsTask records.
+ * Parses checkbox lines into CleanViewTask records.
  *
  * Supports both metadata dialects people actually have in their vaults:
  *   - Tasks plugin emoji shorthand:  📅 2026-07-11  ⏫  🔁 every week
@@ -13,7 +13,7 @@
  */
 
 import type { ListItemCache } from "obsidian";
-import type { PulsTask } from "./types";
+import type { CleanViewTask } from "./types";
 import { PRIORITY_NONE } from "./types";
 import { parseDate } from "./dates";
 
@@ -62,7 +62,7 @@ export function parseTaskLine(
 	path: string,
 	fileName: string,
 	folder: string,
-): PulsTask | null {
+): CleanViewTask | null {
 	const statusChar = item.task;
 	if (statusChar === undefined) return null;
 
@@ -74,7 +74,7 @@ export function parseTaskLine(
 	const body = rawLine.slice(prefixMatch[0].length);
 	const indent = prefixMatch[0].length - prefixMatch[0].trimStart().length;
 
-	const task: PulsTask = {
+	const task: CleanViewTask = {
 		text: body,
 		raw: body,
 		path,
@@ -102,7 +102,7 @@ export function parseTaskLine(
 	return task;
 }
 
-function extractInlineFields(text: string, task: PulsTask): string {
+function extractInlineFields(text: string, task: CleanViewTask): string {
 	if (!text.includes("::")) return text;
 
 	INLINE_FIELD.lastIndex = 0;
@@ -145,7 +145,7 @@ function extractInlineFields(text: string, task: PulsTask): string {
 	});
 }
 
-function extractRecurrence(text: string, task: PulsTask): string {
+function extractRecurrence(text: string, task: CleanViewTask): string {
 	if (!text.includes("🔁")) return text;
 	return text.replace(RECURRENCE, (_match, rest: string) => {
 		const value = rest.trim();
@@ -154,7 +154,7 @@ function extractRecurrence(text: string, task: PulsTask): string {
 	});
 }
 
-function extractEmoji(text: string, task: PulsTask): string {
+function extractEmoji(text: string, task: CleanViewTask): string {
 	EMOJI_TOKEN.lastIndex = 0;
 	return text.replace(EMOJI_TOKEN, (match, marker: string, rest: string | undefined) => {
 		const priority = EMOJI_PRIORITY[marker];
@@ -180,7 +180,7 @@ function extractEmoji(text: string, task: PulsTask): string {
 	});
 }
 
-function extractTags(text: string, task: PulsTask): void {
+function extractTags(text: string, task: CleanViewTask): void {
 	if (!text.includes("#")) return;
 	TAG.lastIndex = 0;
 	let match: RegExpExecArray | null;

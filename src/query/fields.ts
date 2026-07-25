@@ -5,11 +5,11 @@
  * a property read rather than a string lookup and a branch.
  */
 
-import type { PulsFile, PulsTask } from "../core/types";
+import type { CleanViewFile, CleanViewTask } from "../core/types";
 import { dayNumFromMs } from "../core/dates";
 
 export type Source = "tasks" | "files";
-export type Row = PulsTask | PulsFile;
+export type Row = CleanViewTask | CleanViewFile;
 export type Accessor = (row: Row) => unknown;
 
 /** Fields whose values are day numbers, so filters coerce their operands. */
@@ -19,52 +19,52 @@ export const DATE_FIELDS: Record<Source, ReadonlySet<string>> = {
 };
 
 const TASK_FIELDS: Record<string, Accessor> = {
-	text: (r) => (r as PulsTask).text,
-	raw: (r) => (r as PulsTask).raw,
-	done: (r) => (r as PulsTask).done,
-	completed: (r) => (r as PulsTask).done,
-	status: (r) => (r as PulsTask).status,
-	priority: (r) => (r as PulsTask).priority,
-	due: (r) => (r as PulsTask).due,
-	frist: (r) => (r as PulsTask).due,
-	scheduled: (r) => (r as PulsTask).scheduled,
-	start: (r) => (r as PulsTask).start,
-	created: (r) => (r as PulsTask).created,
-	completedOn: (r) => (r as PulsTask).completedOn,
-	recurrence: (r) => (r as PulsTask).recurrence,
-	tags: (r) => (r as PulsTask).tags,
-	path: (r) => (r as PulsTask).path,
-	file: (r) => (r as PulsTask).fileName,
-	folder: (r) => (r as PulsTask).folder,
-	line: (r) => (r as PulsTask).line,
-	depth: (r) => (r as PulsTask).depth,
+	text: (r) => (r as CleanViewTask).text,
+	raw: (r) => (r as CleanViewTask).raw,
+	done: (r) => (r as CleanViewTask).done,
+	completed: (r) => (r as CleanViewTask).done,
+	status: (r) => (r as CleanViewTask).status,
+	priority: (r) => (r as CleanViewTask).priority,
+	due: (r) => (r as CleanViewTask).due,
+	frist: (r) => (r as CleanViewTask).due,
+	scheduled: (r) => (r as CleanViewTask).scheduled,
+	start: (r) => (r as CleanViewTask).start,
+	created: (r) => (r as CleanViewTask).created,
+	completedOn: (r) => (r as CleanViewTask).completedOn,
+	recurrence: (r) => (r as CleanViewTask).recurrence,
+	tags: (r) => (r as CleanViewTask).tags,
+	path: (r) => (r as CleanViewTask).path,
+	file: (r) => (r as CleanViewTask).fileName,
+	folder: (r) => (r as CleanViewTask).folder,
+	line: (r) => (r as CleanViewTask).line,
+	depth: (r) => (r as CleanViewTask).depth,
 };
 
 const FILE_FIELDS: Record<string, Accessor> = {
-	path: (r) => (r as PulsFile).path,
-	name: (r) => (r as PulsFile).name,
-	file: (r) => (r as PulsFile).name,
-	folder: (r) => (r as PulsFile).folder,
-	tags: (r) => (r as PulsFile).tags,
-	size: (r) => (r as PulsFile).size,
-	tasks: (r) => (r as PulsFile).taskCount,
-	openTasks: (r) => (r as PulsFile).openTaskCount,
+	path: (r) => (r as CleanViewFile).path,
+	name: (r) => (r as CleanViewFile).name,
+	file: (r) => (r as CleanViewFile).name,
+	folder: (r) => (r as CleanViewFile).folder,
+	tags: (r) => (r as CleanViewFile).tags,
+	size: (r) => (r as CleanViewFile).size,
+	tasks: (r) => (r as CleanViewFile).taskCount,
+	openTasks: (r) => (r as CleanViewFile).openTaskCount,
 	// Timestamps are exposed as day numbers so they compare against date
 	// expressions like "today-7d" the same way task dates do.
-	mtime: (r) => dayNumFromMs((r as PulsFile).mtime),
-	ctime: (r) => dayNumFromMs((r as PulsFile).ctime),
-	modified: (r) => dayNumFromMs((r as PulsFile).mtime),
-	created: (r) => dayNumFromMs((r as PulsFile).ctime),
+	mtime: (r) => dayNumFromMs((r as CleanViewFile).mtime),
+	ctime: (r) => dayNumFromMs((r as CleanViewFile).ctime),
+	modified: (r) => dayNumFromMs((r as CleanViewFile).mtime),
+	created: (r) => dayNumFromMs((r as CleanViewFile).ctime),
 	/** Raw millisecond timestamps, for display rather than filtering. */
-	mtimeMs: (r) => (r as PulsFile).mtime,
-	ctimeMs: (r) => (r as PulsFile).ctime,
+	mtimeMs: (r) => (r as CleanViewFile).mtime,
+	ctimeMs: (r) => (r as CleanViewFile).ctime,
 };
 
 /**
  * Resolves a field name to an accessor.
  *
  * Unknown names on the `files` source fall through to frontmatter, so
- * `status: leser` filters on the note's own frontmatter without extra syntax.
+ * `status: reading` filters on the note's own frontmatter without extra syntax.
  */
 export function accessor(source: Source, rawField: string): Accessor {
 	const field = rawField.trim();
@@ -72,7 +72,7 @@ export function accessor(source: Source, rawField: string): Accessor {
 	// Explicit escapes for when a frontmatter key shadows a built-in.
 	if (field.startsWith("fm.")) {
 		const key = field.slice(3);
-		return (r) => (r as PulsFile).frontmatter?.[key];
+		return (r) => (r as CleanViewFile).frontmatter?.[key];
 	}
 	if (field.startsWith("file.")) {
 		const key = field.slice(5);
@@ -84,7 +84,7 @@ export function accessor(source: Source, rawField: string): Accessor {
 	const known = table[field];
 	if (known) return known;
 
-	if (source === "files") return (r) => (r as PulsFile).frontmatter?.[field];
+	if (source === "files") return (r) => (r as CleanViewFile).frontmatter?.[field];
 	return () => undefined;
 }
 

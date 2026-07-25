@@ -1,5 +1,5 @@
 /**
- * Puls — fast, local dashboards for Obsidian.
+ * CleanView — fast, local dashboards for Obsidian.
  *
  * The plugin makes no network requests, evaluates no user-supplied JavaScript,
  * and touches no Node APIs (so it runs on mobile). The only writes it performs
@@ -15,21 +15,21 @@ import {
 	TFile,
 	TFolder,
 } from "obsidian";
-import { PulsBlock } from "./block";
+import { CleanViewBlock } from "./block";
 import { VaultIndex } from "./core/index";
 
-interface PulsSettings {
+interface CleanViewSettings {
 	/** Rebuild the whole index at startup instead of trusting incremental updates. */
 	rebuildOnStart: boolean;
 }
 
-const DEFAULT_SETTINGS: PulsSettings = {
+const DEFAULT_SETTINGS: CleanViewSettings = {
 	rebuildOnStart: true,
 };
 
-export default class PulsPlugin extends Plugin {
+export default class CleanViewPlugin extends Plugin {
 	index!: VaultIndex;
-	settings: PulsSettings = DEFAULT_SETTINGS;
+	settings: CleanViewSettings = DEFAULT_SETTINGS;
 	private midnightTimer: number | null = null;
 
 	async onload(): Promise<void> {
@@ -37,14 +37,14 @@ export default class PulsPlugin extends Plugin {
 		this.index = new VaultIndex(this.app);
 
 		this.registerMarkdownCodeBlockProcessor(
-			"puls",
+			"cleanview",
 			(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-				ctx.addChild(new PulsBlock(el, this.app, this.index, source, ctx.sourcePath));
+				ctx.addChild(new CleanViewBlock(el, this.app, this.index, source, ctx.sourcePath));
 			},
 		);
 
 		this.registerVaultEvents();
-		this.addSettingTab(new PulsSettingTab(this));
+		this.addSettingTab(new CleanViewSettingTab(this));
 		this.addCommands();
 
 		// Waiting for layout-ready keeps startup off the critical path, and by
@@ -118,7 +118,7 @@ export default class PulsPlugin extends Plugin {
 				const elapsed = Math.round(performance.now() - started);
 				const stats = this.index.stats();
 				new Notice(
-					`Puls: indexed ${stats.files} notes and ${stats.tasks} tasks in ${elapsed} ms`,
+					`CleanView: indexed ${stats.files} notes and ${stats.tasks} tasks in ${elapsed} ms`,
 					5000,
 				);
 			},
@@ -130,7 +130,7 @@ export default class PulsPlugin extends Plugin {
 			editorCallback: (editor) => {
 				editor.replaceSelection(
 					[
-						"```puls",
+						"```cleanview",
 						"view: tasks",
 						"title: Due today",
 						"filter:",
@@ -150,7 +150,7 @@ export default class PulsPlugin extends Plugin {
 			editorCallback: (editor) => {
 				editor.replaceSelection(
 					[
-						"```puls",
+						"```cleanview",
 						"view: chart",
 						"type: bar",
 						"title: Open tasks by folder",
@@ -171,8 +171,8 @@ export default class PulsPlugin extends Plugin {
 	}
 }
 
-class PulsSettingTab extends PluginSettingTab {
-	constructor(private readonly plugin: PulsPlugin) {
+class CleanViewSettingTab extends PluginSettingTab {
+	constructor(private readonly plugin: CleanViewPlugin) {
 		super(plugin.app, plugin);
 	}
 
@@ -208,11 +208,11 @@ class PulsSettingTab extends PluginSettingTab {
 				}),
 			);
 
-		const about = containerEl.createDiv({ cls: "puls-about" });
+		const about = containerEl.createDiv({ cls: "cleanview-about" });
 		about.createEl("h3", { text: "Privacy" });
 		about.createEl("p", {
 			text:
-				"Puls makes no network requests, downloads nothing, and never executes " +
+				"CleanView makes no network requests, downloads nothing, and never executes " +
 				"JavaScript from your notes. Block configuration is data, not code.",
 		});
 	}

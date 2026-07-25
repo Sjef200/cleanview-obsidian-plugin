@@ -9,7 +9,7 @@
  *     - { field: page, format: progress, max: totalPages }
  */
 
-import type { PulsFile } from "../core/types";
+import type { CleanViewFile } from "../core/types";
 import { formatISO, formatRelativeMs, formatRelativeDay } from "../core/dates";
 import type { BlockConfig, QueryResult } from "../query/query";
 import { type Row, accessor } from "../query/fields";
@@ -41,13 +41,13 @@ export function renderTable(
 	}
 
 	const columns = buildColumns(config);
-	const wrapper = container.createDiv({ cls: "puls-table-wrap" });
-	const table = wrapper.createEl("table", { cls: "puls-table" });
+	const wrapper = container.createDiv({ cls: "cleanview-table-wrap" });
+	const table = wrapper.createEl("table", { cls: "cleanview-table" });
 
 	const headRow = table.createEl("thead").createEl("tr");
 	for (const column of columns) {
 		const th = headRow.createEl("th", { text: column.label });
-		if (column.align !== "left") th.addClass(`puls-align-${column.align}`);
+		if (column.align !== "left") th.addClass(`cleanview-align-${column.align}`);
 	}
 
 	const body = table.createEl("tbody");
@@ -59,7 +59,7 @@ export function renderTable(
 	});
 
 	const note = truncated(result.total, Math.min(result.rows.length, cap));
-	if (note) container.createDiv({ cls: "puls-footnote", text: note });
+	if (note) container.createDiv({ cls: "cleanview-footnote", text: note });
 }
 
 function buildColumns(config: BlockConfig): Column[] {
@@ -124,7 +124,7 @@ function prettify(field: string): string {
 
 function renderCell(tr: HTMLElement, row: Row, column: Column, ctx: ViewContext): void {
 	const td = tr.createEl("td");
-	if (column.align !== "left") td.addClass(`puls-align-${column.align}`);
+	if (column.align !== "left") td.addClass(`cleanview-align-${column.align}`);
 
 	const value = column.get(row);
 
@@ -134,7 +134,7 @@ function renderCell(tr: HTMLElement, row: Row, column: Column, ctx: ViewContext)
 	}
 
 	if (value === undefined || value === null || value === "") {
-		td.createSpan({ cls: "puls-muted", text: "—" });
+		td.createSpan({ cls: "cleanview-muted", text: "—" });
 		return;
 	}
 
@@ -157,7 +157,7 @@ function renderCell(tr: HTMLElement, row: Row, column: Column, ctx: ViewContext)
 			return;
 		case "tags":
 			if (Array.isArray(value)) {
-				for (const tag of value) td.createSpan({ cls: "puls-chip", text: `#${tag}` });
+				for (const tag of value) td.createSpan({ cls: "cleanview-chip", text: `#${tag}` });
 			} else td.setText(String(value));
 			return;
 		case "number":
@@ -169,8 +169,8 @@ function renderCell(tr: HTMLElement, row: Row, column: Column, ctx: ViewContext)
 	}
 
 	if (column.link) {
-		const path = (row as PulsFile).path ?? (row as { path: string }).path;
-		const link = td.createSpan({ cls: "puls-link", text: String(value) });
+		const path = (row as CleanViewFile).path ?? (row as { path: string }).path;
+		const link = td.createSpan({ cls: "cleanview-link", text: String(value) });
 		link.setAttr("role", "link");
 		link.setAttr("tabindex", "0");
 		const open = (event: Event) => {
@@ -199,14 +199,14 @@ function renderProgress(td: HTMLElement, value: unknown, max: unknown): void {
 	const current = Number(value);
 	const total = Number(max);
 	if (!Number.isFinite(current) || !Number.isFinite(total) || total <= 0) {
-		td.createSpan({ cls: "puls-muted", text: "—" });
+		td.createSpan({ cls: "cleanview-muted", text: "—" });
 		return;
 	}
 	const percent = Math.max(0, Math.min(100, Math.round((current / total) * 100)));
-	const wrap = td.createDiv({ cls: "puls-progress" });
-	const bar = wrap.createDiv({ cls: "puls-progress-bar" });
-	bar.style.setProperty("--puls-progress", `${percent}%`);
-	wrap.createSpan({ cls: "puls-progress-label", text: `${percent} %` });
+	const wrap = td.createDiv({ cls: "cleanview-progress" });
+	const bar = wrap.createDiv({ cls: "cleanview-progress-bar" });
+	bar.style.setProperty("--cleanview-progress", `${percent}%`);
+	wrap.createSpan({ cls: "cleanview-progress-label", text: `${percent} %` });
 }
 
 export function formatNumber(value: number): string {

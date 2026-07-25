@@ -13,7 +13,7 @@
  */
 
 import { coerceDayNum, formatLong, today } from "../core/dates";
-import type { PulsFile } from "../core/types";
+import type { CleanViewFile } from "../core/types";
 import { type Row, accessor } from "../query/fields";
 import type { BlockConfig, QueryResult } from "../query/query";
 import { emptyState, errorState, openFileAt, renderCapped, sectionHeader } from "./render-utils";
@@ -64,7 +64,7 @@ export function renderCountdown(
 	const getStart = startField ? accessor(config.source, startField) : null;
 
 	const now = today();
-	const list = container.createDiv({ cls: "puls-countdowns" });
+	const list = container.createDiv({ cls: "cleanview-countdowns" });
 
 	renderCapped(list, result.rows, config.limit ?? 10, (row, parent) => {
 		const deadline = coerceDayNum(getDate(row));
@@ -85,19 +85,19 @@ function renderCard(
 	const daysLeft = deadline - now;
 	const urgency = urgencyFor(daysLeft);
 
-	const card = parent.createDiv({ cls: `puls-countdown ${urgency.cls}` });
+	const card = parent.createDiv({ cls: `cleanview-countdown ${urgency.cls}` });
 
-	const figure = card.createDiv({ cls: "puls-countdown-figure" });
-	figure.createSpan({ cls: "puls-countdown-days", text: String(Math.abs(daysLeft)) });
+	const figure = card.createDiv({ cls: "cleanview-countdown-figure" });
+	figure.createSpan({ cls: "cleanview-countdown-days", text: String(Math.abs(daysLeft)) });
 	// The figure is an absolute value, so the unit has to say which side of the
 	// deadline it falls on. "4 dager" above "Forfalt" otherwise reads as four
 	// days remaining.
-	figure.createSpan({ cls: "puls-countdown-unit", text: unitLabel(daysLeft) });
+	figure.createSpan({ cls: "cleanview-countdown-unit", text: unitLabel(daysLeft) });
 
-	const body = card.createDiv({ cls: "puls-countdown-body" });
+	const body = card.createDiv({ cls: "cleanview-countdown-body" });
 
-	const label = String(config.label ? accessor(config.source, String(config.label))(row) : (row as PulsFile).name ?? "");
-	const titleEl = body.createDiv({ cls: "puls-countdown-title puls-link", text: label });
+	const label = String(config.label ? accessor(config.source, String(config.label))(row) : (row as CleanViewFile).name ?? "");
+	const titleEl = body.createDiv({ cls: "cleanview-countdown-title cleanview-link", text: label });
 	titleEl.setAttr("role", "link");
 	titleEl.setAttr("tabindex", "0");
 	const open = (event: Event) => {
@@ -109,31 +109,31 @@ function renderCard(
 		if (event.key === "Enter") open(event);
 	});
 
-	const meta = body.createDiv({ cls: "puls-countdown-meta" });
+	const meta = body.createDiv({ cls: "cleanview-countdown-meta" });
 	// Icon + word carry the state; the colour only reinforces it.
-	const badge = meta.createSpan({ cls: "puls-countdown-badge" });
-	badge.createSpan({ cls: "puls-countdown-icon", text: urgency.icon });
+	const badge = meta.createSpan({ cls: "cleanview-countdown-badge" });
+	badge.createSpan({ cls: "cleanview-countdown-icon", text: urgency.icon });
 	badge.createSpan({ text: urgency.label });
-	meta.createSpan({ cls: "puls-countdown-date", text: formatLong(deadline) });
+	meta.createSpan({ cls: "cleanview-countdown-date", text: formatLong(deadline) });
 
 	// Elapsed share of the run-up, when we know when it started.
 	if (start !== undefined && deadline > start) {
 		const elapsed = Math.max(0, Math.min(1, (now - start) / (deadline - start)));
-		const track = body.createDiv({ cls: "puls-progress" });
-		const bar = track.createDiv({ cls: "puls-progress-bar" });
-		bar.style.setProperty("--puls-progress", `${Math.round(elapsed * 100)}%`);
+		const track = body.createDiv({ cls: "cleanview-progress" });
+		const bar = track.createDiv({ cls: "cleanview-progress-bar" });
+		bar.style.setProperty("--cleanview-progress", `${Math.round(elapsed * 100)}%`);
 		track.createSpan({
-			cls: "puls-progress-label",
+			cls: "cleanview-progress-label",
 			text: `${Math.round(elapsed * 100)}% of the time used`,
 		});
 	}
 
 	// Step progress, if the goal note has checkboxes of its own.
-	const file = row as PulsFile;
+	const file = row as CleanViewFile;
 	if (file.taskCount > 0) {
 		const done = file.taskCount - file.openTaskCount;
 		body.createDiv({
-			cls: "puls-countdown-steps",
+			cls: "cleanview-countdown-steps",
 			text: `${done} of ${file.taskCount} steps done`,
 		});
 	}

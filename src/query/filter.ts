@@ -211,7 +211,7 @@ function compileOperators(
 				break;
 			}
 			default:
-				console.warn(`Puls: ignored unknown filter operator "${rawOp}"`);
+				console.warn(`CleanView: ignored unknown filter operator "${rawOp}"`);
 		}
 	}
 

@@ -7,7 +7,7 @@
  */
 
 import type { App, Component } from "obsidian";
-import type { PulsTask } from "../core/types";
+import type { CleanViewTask } from "../core/types";
 import { PRIORITY_LABELS, PRIORITY_NONE } from "../core/types";
 import { formatISO, formatRelativeDay, today } from "../core/dates";
 import type { BlockConfig, QueryResult } from "../query/query";
@@ -44,8 +44,8 @@ export function renderTasks(
 			renderGroup(container, group, show, cap, ctx);
 		}
 	} else {
-		const list = container.createDiv({ cls: "puls-tasks" });
-		renderCapped(list, result.rows as PulsTask[], cap, (task, parent) =>
+		const list = container.createDiv({ cls: "cleanview-tasks" });
+		renderCapped(list, result.rows as CleanViewTask[], cap, (task, parent) =>
 			renderTask(parent, task, show, ctx),
 		);
 	}
@@ -58,27 +58,27 @@ function renderGroup(
 	cap: number,
 	ctx: ViewContext,
 ): void {
-	const section = container.createDiv({ cls: "puls-group" });
-	const heading = section.createDiv({ cls: "puls-group-head" });
-	heading.createSpan({ cls: "puls-group-label", text: group.label });
-	heading.createSpan({ cls: "puls-count", text: String(group.rows.length) });
+	const section = container.createDiv({ cls: "cleanview-group" });
+	const heading = section.createDiv({ cls: "cleanview-group-head" });
+	heading.createSpan({ cls: "cleanview-group-label", text: group.label });
+	heading.createSpan({ cls: "cleanview-count", text: String(group.rows.length) });
 
-	const list = section.createDiv({ cls: "puls-tasks" });
-	renderCapped(list, group.rows as PulsTask[], cap, (task, parent) =>
+	const list = section.createDiv({ cls: "cleanview-tasks" });
+	renderCapped(list, group.rows as CleanViewTask[], cap, (task, parent) =>
 		renderTask(parent, task, show, ctx),
 	);
 }
 
 function renderTask(
 	parent: HTMLElement,
-	task: PulsTask,
+	task: CleanViewTask,
 	show: Set<string>,
 	ctx: ViewContext,
 ): void {
-	const row = parent.createDiv({ cls: "puls-task" });
+	const row = parent.createDiv({ cls: "cleanview-task" });
 	if (task.done) row.addClass("is-done");
 
-	const checkbox = row.createEl("input", { type: "checkbox", cls: "puls-check" });
+	const checkbox = row.createEl("input", { type: "checkbox", cls: "cleanview-check" });
 	checkbox.checked = task.done;
 	checkbox.setAttr("aria-label", task.done ? "Mark as not done" : "Mark as done");
 	checkbox.addEventListener("click", (event) => {
@@ -90,15 +90,15 @@ function renderTask(
 		void toggleTaskInFile(ctx.app, task);
 	});
 
-	const body = row.createDiv({ cls: "puls-task-body" });
-	const text = body.createDiv({ cls: "puls-task-text" });
+	const body = row.createDiv({ cls: "cleanview-task-body" });
+	const text = body.createDiv({ cls: "cleanview-task-text" });
 	renderInline(ctx.app, ctx.component, text, task.text || "(empty task)", ctx.sourcePath);
 
-	const meta = body.createDiv({ cls: "puls-meta" });
+	const meta = body.createDiv({ cls: "cleanview-meta" });
 
 	if (show.has("priority") && task.priority !== PRIORITY_NONE) {
 		meta.createSpan({
-			cls: `puls-chip puls-prio puls-prio-${task.priority}`,
+			cls: `cleanview-chip cleanview-prio cleanview-prio-${task.priority}`,
 			text: PRIORITY_LABELS[task.priority] ?? String(task.priority),
 		});
 	}
@@ -106,18 +106,18 @@ function renderTask(
 	if (show.has("due") && task.due !== undefined) {
 		const overdue = !task.done && task.due < today();
 		const chip = meta.createSpan({
-			cls: `puls-chip puls-due${overdue ? " is-overdue" : ""}`,
+			cls: `cleanview-chip cleanview-due${overdue ? " is-overdue" : ""}`,
 			text: formatRelativeDay(task.due),
 		});
 		chip.setAttr("title", formatISO(task.due));
 	}
 
 	if (show.has("scheduled") && task.scheduled !== undefined) {
-		meta.createSpan({ cls: "puls-chip", text: `scheduled ${formatRelativeDay(task.scheduled)}` });
+		meta.createSpan({ cls: "cleanview-chip", text: `scheduled ${formatRelativeDay(task.scheduled)}` });
 	}
 
 	if (show.has("file")) {
-		const link = meta.createSpan({ cls: "puls-chip puls-file", text: task.fileName });
+		const link = meta.createSpan({ cls: "cleanview-chip cleanview-file", text: task.fileName });
 		link.setAttr("role", "link");
 		link.setAttr("tabindex", "0");
 		const open = (event: Event) => {

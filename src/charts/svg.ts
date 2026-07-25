@@ -115,7 +115,7 @@ export class Tooltip {
 	show(host: HTMLElement, x: number, y: number, lines: string[]): void {
 		if (!this.el) {
 			this.el = document.createElement("div");
-			this.el.className = "puls-tooltip";
+			this.el.className = "cleanview-tooltip";
 		}
 		// The coordinates are relative to `host`, so the tooltip has to live
 		// inside it. A shared Tooltip instance moves between hosts rather than
@@ -124,7 +124,7 @@ export class Tooltip {
 
 		const children = lines.map((line, i) => {
 			const div = document.createElement("div");
-			div.className = i === 0 ? "puls-tooltip-head" : "puls-tooltip-line";
+			div.className = i === 0 ? "cleanview-tooltip-head" : "cleanview-tooltip-line";
 			div.textContent = line;
 			return div;
 		});

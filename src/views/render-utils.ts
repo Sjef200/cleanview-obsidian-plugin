@@ -10,16 +10,16 @@ import { type App, MarkdownRenderer, type Component, type TFile } from "obsidian
 
 export function sectionHeader(parent: HTMLElement, title: string | undefined): void {
 	if (!title) return;
-	parent.createDiv({ cls: "puls-title", text: title });
+	parent.createDiv({ cls: "cleanview-title", text: title });
 }
 
 export function emptyState(parent: HTMLElement, message: string): void {
-	parent.createDiv({ cls: "puls-empty", text: message });
+	parent.createDiv({ cls: "cleanview-empty", text: message });
 }
 
 export function errorState(parent: HTMLElement, message: string): void {
-	const box = parent.createDiv({ cls: "puls-error" });
-	box.createSpan({ cls: "puls-error-badge", text: "Puls" });
+	const box = parent.createDiv({ cls: "cleanview-error" });
+	box.createSpan({ cls: "cleanview-error-badge", text: "CleanView" });
 	box.createSpan({ text: message });
 }
 
@@ -77,7 +77,7 @@ export function renderCapped<T>(
 
 	const remaining = items.length - cap;
 	const more = parent.createEl("button", {
-		cls: "puls-more",
+		cls: "cleanview-more",
 		text: `Show ${remaining} more`,
 	});
 	more.addEventListener("click", () => {

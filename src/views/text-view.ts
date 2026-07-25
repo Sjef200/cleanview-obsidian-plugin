@@ -26,7 +26,7 @@ export function renderText(
 	const text = template.replace(PLACEHOLDER, (match, name: string, modifier?: string) =>
 		resolve(name.toLowerCase(), modifier?.toLowerCase(), index) ?? match,
 	);
-	container.createDiv({ cls: "puls-text", text });
+	container.createDiv({ cls: "cleanview-text", text });
 }
 
 function resolve(name: string, modifier: string | undefined, index: VaultIndex): string | null {

@@ -46,14 +46,14 @@ export function renderChart(
 		return { dispose: () => undefined };
 	}
 
-	const host = container.createDiv({ cls: "puls-chart" });
+	const host = container.createDiv({ cls: "cleanview-chart" });
 	const tooltip = new Tooltip();
 	const format = (n: number) => formatNumber(Math.round(n * 10) / 10);
 
 	const dispose = onWidth(host, (width) => {
 		host.querySelector("svg")?.remove();
 		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		svg.setAttribute("class", "puls-svg");
+		svg.setAttribute("class", "cleanview-svg");
 		svg.setAttribute("role", "img");
 		svg.setAttribute("aria-label", chartSummary(config.title, type, data));
 		host.insertBefore(svg, host.firstChild);
@@ -163,7 +163,7 @@ function addTableToggle(
 	data: Datum[],
 	format: (n: number) => string,
 ): void {
-	const toggle = container.createEl("button", { cls: "puls-more puls-table-toggle", text: "Show values" });
+	const toggle = container.createEl("button", { cls: "cleanview-more cleanview-table-toggle", text: "Show values" });
 	let table: HTMLElement | null = null;
 
 	toggle.addEventListener("click", () => {
@@ -173,16 +173,16 @@ function addTableToggle(
 			toggle.setText("Show values");
 			return;
 		}
-		table = container.createDiv({ cls: "puls-table-wrap" });
-		const el = table.createEl("table", { cls: "puls-table" });
+		table = container.createDiv({ cls: "cleanview-table-wrap" });
+		const el = table.createEl("table", { cls: "cleanview-table" });
 		const head = el.createEl("thead").createEl("tr");
 		head.createEl("th", { text: "Category" });
-		head.createEl("th", { text: "Value", cls: "puls-align-right" });
+		head.createEl("th", { text: "Value", cls: "cleanview-align-right" });
 		const body = el.createEl("tbody");
 		for (const datum of data) {
 			const tr = body.createEl("tr");
 			tr.createEl("td", { text: datum.label });
-			tr.createEl("td", { text: format(datum.value), cls: "puls-align-right" });
+			tr.createEl("td", { text: format(datum.value), cls: "cleanview-align-right" });
 		}
 		toggle.setText("Hide values");
 	});

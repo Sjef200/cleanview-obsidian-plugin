@@ -8,7 +8,7 @@
  */
 
 /** A single checkbox line somewhere in the vault. */
-export interface PulsTask {
+export interface CleanViewTask {
 	/** Display text, with metadata (emoji dates, priority, inline fields) stripped out. */
 	text: string;
 	/** The raw line content after the checkbox, kept for search and debugging. */
@@ -39,7 +39,7 @@ export interface PulsTask {
 }
 
 /** One markdown file, flattened for fast filtering. */
-export interface PulsFile {
+export interface CleanViewFile {
 	path: string;
 	/** Basename without extension. */
 	name: string;
