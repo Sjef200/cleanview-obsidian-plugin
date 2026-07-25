@@ -31,6 +31,7 @@ export default class CleanViewPlugin extends Plugin {
 	index!: VaultIndex;
 	settings: CleanViewSettings = DEFAULT_SETTINGS;
 	private midnightTimer: number | null = null;
+	private builtAfterCacheResolved = false;
 
 	async onload(): Promise<void> {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
@@ -47,12 +48,26 @@ export default class CleanViewPlugin extends Plugin {
 		this.addSettingTab(new CleanViewSettingTab(this));
 		this.addCommands();
 
-		// Waiting for layout-ready keeps startup off the critical path, and by
-		// then Obsidian's own metadata cache is populated — which is the data we
-		// build from, so building earlier would just read an empty cache.
+		// Waiting for layout-ready keeps startup off the critical path.
 		this.app.workspace.onLayoutReady(() => {
 			void this.index.build();
 		});
+
+		// `onLayoutReady` means the workspace is ready, NOT that the metadata
+		// cache is populated. On a cold start with a large vault Obsidian is
+		// still indexing, `getFileCache()` returns null for files it has not
+		// reached, and every note looks task-free. Rebuild once Obsidian
+		// reports the cache resolved.
+		//
+		// "resolved" also fires after later edits, so this rebuilds only the
+		// first time; incremental updates handle everything after that.
+		this.registerEvent(
+			this.app.metadataCache.on("resolved", () => {
+				if (this.builtAfterCacheResolved) return;
+				this.builtAfterCacheResolved = true;
+				void this.index.build();
+			}),
+		);
 
 		this.scheduleMidnightRefresh();
 	}
