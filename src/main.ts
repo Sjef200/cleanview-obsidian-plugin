@@ -17,6 +17,7 @@ import {
 } from "obsidian";
 import { CleanViewBlock } from "./block";
 import { VaultIndex } from "./core/index";
+import { BlockBuilderModal } from "./ui/block-builder";
 
 interface CleanViewSettings {
 	/** Rebuild the whole index at startup instead of trusting incremental updates. */
@@ -136,6 +137,14 @@ export default class CleanViewPlugin extends Plugin {
 					`CleanView: indexed ${stats.files} notes and ${stats.tasks} tasks in ${elapsed} ms`,
 					5000,
 				);
+			},
+		});
+
+		this.addCommand({
+			id: "new-block",
+			name: "New dashboard block",
+			editorCallback: (editor) => {
+				new BlockBuilderModal(this.app, (block) => editor.replaceSelection(block)).open();
 			},
 		});
 

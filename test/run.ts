@@ -14,6 +14,7 @@ import { compileSort } from "../src/query/sort";
 import { compileAggregator } from "../src/query/aggregate";
 import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
+import { DEFAULT_STATE, buildBlock, type BuilderState } from "../src/ui/block-spec";
 
 let passed = 0;
 let failed = 0;
@@ -241,6 +242,71 @@ console.log("\nGoals and frontmatter dates");
 	// A plain string field must not be hijacked by the date machinery.
 	const notADate = compileFilter({ type: "goal" }, "files")!;
 	check("string field untouched", goals.filter((g) => notADate(g)).length, 4);
+}
+
+// --------------------------------------------------------- block builder
+
+console.log("\nBlock builder");
+{
+	const base = { ...DEFAULT_STATE };
+
+	check(
+		"default: open tasks",
+		buildBlock(base),
+		"```cleanview\nview: tasks\nfilter:\n  done: false\nsort: [priority desc, due asc]\n```\n",
+	);
+
+	check(
+		"title, folder, tag and due window",
+		buildBlock({ ...base, title: "This week", folder: "School", tag: "#exam", due: "week" }),
+		"```cleanview\nview: tasks\ntitle: This week\nfrom: School\nfilter:\n  done: false\n"
+			+ "  due: { to: today+7d }\n  tags: { has: exam }\nsort: [priority desc, due asc]\n```\n",
+	);
+
+	check(
+		"chart carries its type and split",
+		buildBlock({ ...base, view: "chart", chartType: "donut", by: "priority" }),
+		"```cleanview\nview: chart\ntype: donut\nfilter:\n  done: false\nby: priority\nvalue: count\n```\n",
+	);
+
+	check(
+		"counting notes switches the source and drops task filters",
+		buildBlock({ ...base, view: "stat", measure: "notes", status: "all" }),
+		"```cleanview\nview: stat\nsource: files\nvalue: count\n```\n",
+	);
+
+	check(
+		"countdown reads notes, not tasks",
+		buildBlock({ ...base, view: "countdown", folder: "Goals" }),
+		"```cleanview\nview: countdown\nfrom: Goals\nsource: files\nsort: [due asc]\n```\n",
+	);
+
+	// "Both" means no status filter at all, and with no due window that leaves
+	// nothing to filter on — the block must then omit the key entirely rather
+	// than emit a dangling "filter:".
+	const noFilters = buildBlock({ ...base, status: "all", due: "any" });
+	ok("no empty filter key", !noFilters.includes("filter:"));
+
+	// Whatever the combination, the result has to stay well-formed.
+	const views: Array<BuilderState["view"]> = ["tasks", "table", "stat", "chart", "countdown"];
+	const dues: Array<BuilderState["due"]> = ["any", "overdue", "today", "week", "month", "none"];
+	let malformed = 0;
+	for (const view of views) {
+		for (const dueChoice of dues) {
+			for (const status of ["open", "done", "all"] as Array<BuilderState["status"]>) {
+				const block = buildBlock({ ...base, view, due: dueChoice, status, tag: "x", folder: "F" });
+				const lines = block.trimEnd().split("\n");
+				if (lines[0] !== "```cleanview" || lines[lines.length - 1] !== "```") malformed++;
+				// Only filter entries are indented, and always by exactly two spaces.
+				for (const line of lines.slice(1, -1)) {
+					if (line.startsWith(" ") && !/^ {2}\S/.test(line)) malformed++;
+					if (line.trim() === "filter:" ) continue;
+				}
+				if (block.includes("filter:\n```")) malformed++;
+			}
+		}
+	}
+	check("all 90 combinations are well-formed", malformed, 0);
 }
 
 // ------------------------------------------------------------- benchmark

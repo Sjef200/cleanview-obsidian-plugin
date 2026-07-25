@@ -545,6 +545,29 @@
 	font-size: var(--font-ui-small);
 }
 
+/* ---------------------------------------------------------- block builder */
+
+.cleanview-builder-hint {
+	margin: 1.2em 0 0.4em;
+	color: var(--text-muted);
+	font-size: var(--font-ui-smaller);
+}
+
+/* The preview is the escape hatch: it shows exactly what gets inserted, so
+   anything the dialog cannot express can be edited as text afterwards. */
+.cleanview-builder-preview {
+	margin: 0 0 0.5em;
+	padding: 0.7em 0.9em;
+	background: var(--background-primary-alt);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	font-family: var(--font-monospace);
+	font-size: var(--font-ui-smaller);
+	line-height: 1.55;
+	white-space: pre;
+	overflow-x: auto;
+}
+
 /* --------------------------------------------------------------- settings */
 
 /* The separating rule comes from Setting.setHeading() above this paragraph,
