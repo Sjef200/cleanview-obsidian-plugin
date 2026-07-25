@@ -208,9 +208,12 @@ class CleanViewSettingTab extends PluginSettingTab {
 				}),
 			);
 
-		const about = containerEl.createDiv({ cls: "cleanview-about" });
-		about.createEl("h3", { text: "Privacy" });
-		about.createEl("p", {
+		// Obsidian's review guidelines ask for setHeading() rather than a raw
+		// heading element, so section headers match the rest of the settings UI.
+		new Setting(containerEl).setName("Privacy").setHeading();
+
+		containerEl.createEl("p", {
+			cls: "cleanview-about",
 			text:
 				"CleanView makes no network requests, downloads nothing, and never executes " +
 				"JavaScript from your notes. Block configuration is data, not code.",

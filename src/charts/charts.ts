@@ -21,7 +21,7 @@ export interface Datum {
 	detail?: string;
 }
 
-/** Max donut segments before the tail folds into "Annet". */
+/** Max donut segments before the tail folds into "Other". */
 const DONUT_MAX = 6;
 
 const CSS = {

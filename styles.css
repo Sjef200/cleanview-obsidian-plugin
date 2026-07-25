@@ -543,10 +543,10 @@
 
 /* --------------------------------------------------------------- settings */
 
+/* The separating rule comes from Setting.setHeading() above this paragraph,
+   so it must not draw its own. */
 .cleanview-about {
-	margin-top: 2em;
-	padding-top: 1em;
-	border-top: 1px solid var(--background-modifier-border);
+	margin-top: 0;
 	color: var(--text-muted);
 	font-size: var(--font-ui-small);
 }
