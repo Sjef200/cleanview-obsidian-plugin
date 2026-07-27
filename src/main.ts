@@ -261,7 +261,12 @@ class CleanViewSettingTab extends PluginSettingTab {
 		}
 	}
 
-	/** Fallback for Obsidian older than 1.13.0, which has no declarative tab. */
+	/**
+	 * Kept only so the tab still renders if Obsidian ever calls it. The
+	 * declarative definitions above are what 1.13 uses, and manifest.json now
+	 * declares 1.13.0 as the minimum, because every API a plugin references has
+	 * to be covered by the version it claims to support.
+	 */
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();

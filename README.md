@@ -79,6 +79,11 @@ Release assets carry [GitHub build provenance attestations](https://docs.github.
 so you can verify `main.js` was built by CI from this repository rather than
 uploaded by hand.
 
+## Requirements
+
+Obsidian 1.13.0 or later. Older versions can install release 0.1.7, which
+Obsidian selects automatically via `versions.json`.
+
 ## Installation
 
 Not yet in the community plugin browser. To install manually, copy `main.js`,
