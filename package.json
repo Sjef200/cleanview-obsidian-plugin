@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Fast, fully local dashboards for Obsidian",
   "license": "MIT",
-  "author": "William",
+  "author": "Sjef200",
   "type": "module",
   "scripts": {
     "dev": "node esbuild.config.mjs",
