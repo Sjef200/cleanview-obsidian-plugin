@@ -12,7 +12,6 @@ import {
 	Notice,
 	Plugin,
 	PluginSettingTab,
-	Setting,
 	type SettingDefinitionItem,
 	TFile,
 	TFolder,
@@ -210,12 +209,12 @@ class CleanViewSettingTab extends PluginSettingTab {
 	}
 
 	/**
-	 * The declarative tab, used on Obsidian 1.13 and later.
+	 * The settings tab, declared as data.
 	 *
 	 * Describing the settings as data rather than building them by hand is what
-	 * lets Obsidian index them for its settings search. `display()` below stays
-	 * as the fallback for older versions — Obsidian ignores it whenever this
-	 * returns a non-empty array.
+	 * lets Obsidian index them for its settings search. There is no imperative
+	 * `display()` fallback: the manifest requires 1.13.0, so the declarative
+	 * path is the only one that can ever run.
 	 */
 	getSettingDefinitions(): SettingDefinitionItem[] {
 		const stats = this.plugin.index.stats();
@@ -259,50 +258,5 @@ class CleanViewSettingTab extends PluginSettingTab {
 			this.plugin.settings.rebuildOnStart = Boolean(value);
 			await this.plugin.saveSettings();
 		}
-	}
-
-	/**
-	 * Kept only so the tab still renders if Obsidian ever calls it. The
-	 * declarative definitions above are what 1.13 uses, and manifest.json now
-	 * declares 1.13.0 as the minimum, because every API a plugin references has
-	 * to be covered by the version it claims to support.
-	 */
-	display(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-
-		const stats = this.plugin.index.stats();
-		new Setting(containerEl)
-			.setName("Index")
-			.setDesc(
-				this.plugin.index.ready
-					? `${stats.files} notes, ${stats.tasks} tasks (${stats.openTasks} open).`
-					: "Building…",
-			)
-			.addButton((button) =>
-				button.setButtonText("Rebuild").onClick(async () => {
-					await this.plugin.index.build();
-					this.display();
-				}),
-			);
-
-		new Setting(containerEl)
-			.setName("Build index at startup")
-			.setDesc(
-				"Reads the whole vault when Obsidian starts. Turn this off only if startup feels " +
-					"slow on a very large vault; the index is then built when you first open a dashboard.",
-			)
-			.addToggle((toggle) =>
-				toggle.setValue(this.plugin.settings.rebuildOnStart).onChange(async (value) => {
-					this.plugin.settings.rebuildOnStart = value;
-					await this.plugin.saveSettings();
-				}),
-			);
-
-		// Obsidian's review guidelines ask for setHeading() rather than a raw
-		// heading element, so section headers match the rest of the settings UI.
-		new Setting(containerEl).setName("Privacy").setHeading();
-
-		containerEl.createEl("p", { cls: "cleanview-about", text: PRIVACY_NOTE });
 	}
 }

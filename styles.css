@@ -577,11 +577,6 @@
 
 /* The separating rule comes from Setting.setHeading() above this paragraph,
    so it must not draw its own. */
-.cleanview-about {
-	margin-top: 0;
-	color: var(--text-muted);
-	font-size: var(--font-ui-small);
-}
 
 /* Forced-colours and reduced-motion users get the same information without
    relying on hue or animation. */

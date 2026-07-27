@@ -1,7 +1,7 @@
 {
   "id": "cleanview",
   "name": "CleanView",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "minAppVersion": "1.13.0",
   "description": "Fast, fully local dashboards: task lists, tables, key figures, countdowns and hand-drawn SVG charts. No network, no JavaScript evaluation, no dependencies.",
   "author": "Sjef200",
