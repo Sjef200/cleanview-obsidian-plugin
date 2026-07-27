@@ -61,6 +61,22 @@ scrolled out of view are marked stale and catch up when they scroll back in.
   checkbox, and it verifies the target line still matches what was indexed
   before changing anything.
 
+### What it reads
+
+CleanView enumerates every markdown file in the vault. That is inherent to what
+it does — a dashboard asking "show me all overdue tasks" has to consider every
+note that could contain one. Concretely:
+
+- It lists all markdown files and reads their cached metadata (frontmatter,
+  tags, checkbox positions), which Obsidian has already parsed.
+- It reads file *contents* only for files the cache reports as containing
+  checkboxes, because task text is not held in the metadata cache.
+- Nothing read is stored anywhere outside memory, and nothing leaves the device.
+
+Release assets carry [GitHub build provenance attestations](https://docs.github.com/en/actions/security-for-github-actions/using-artifact-attestations),
+so you can verify `main.js` was built by CI from this repository rather than
+uploaded by hand.
+
 ## Installation
 
 Not yet in the community plugin browser. To install manually, copy `main.js`,

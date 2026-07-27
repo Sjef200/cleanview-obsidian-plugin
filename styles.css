@@ -302,12 +302,8 @@
 	flex: 1;
 	height: 6px;
 	border-radius: 3px;
-	/* Unfilled track is a lighter step of the fill's own ramp.
-	   iOS Safari gained color-mix() only in 16.2, and without a fallback the
-	   track renders as nothing there. The first declaration is theme-aware and
-	   is simply overridden wherever color-mix() is understood. */
+	/* Theme-aware base; the tinted version is applied below where supported. */
 	background: var(--background-modifier-border);
-	background: color-mix(in srgb, var(--cleanview-series-1) 18%, transparent);
 	overflow: hidden;
 }
 
@@ -318,6 +314,15 @@
 	width: var(--cleanview-progress, 0%);
 	border-radius: 3px;
 	background: var(--cleanview-series-1);
+}
+
+/* Unfilled track as a lighter step of the fill's own ramp. iOS Safari gained
+   color-mix() only in 16.2; @supports keeps the fallback without declaring
+   `background` twice in the same rule. */
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+	.cleanview-progress-bar {
+		background: color-mix(in srgb, var(--cleanview-series-1) 18%, transparent);
+	}
 }
 
 .cleanview-progress-label {

@@ -18,7 +18,7 @@
  *     a revision counter; it never rebuilds the vault.
  */
 
-import { type App, type CachedMetadata, type TFile, TFolder, getAllTags } from "obsidian";
+import { type App, type CachedMetadata, TFile, TFolder, getAllTags } from "obsidian";
 import type { CleanViewFile, CleanViewTask } from "./types";
 import { parseTaskLine } from "./task-parser";
 
@@ -156,8 +156,8 @@ export class VaultIndex {
 		const walk = (dir: TFolder) => {
 			for (const child of dir.children) {
 				if (child instanceof TFolder) walk(child);
-				else if ("extension" in child && (child as TFile).extension === "md") {
-					touched.push((child as TFile).path);
+				else if (child instanceof TFile && child.extension === "md") {
+					touched.push(child.path);
 				}
 			}
 		};

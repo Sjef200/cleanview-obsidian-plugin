@@ -65,4 +65,27 @@ export function installObsidianShim(): void {
 	proto.setAttr = function (name: string, value: string) {
 		(this as unknown as HTMLElement).setAttribute(name, value);
 	};
+
+	// Obsidian also exposes detached-element constructors as globals. The chart
+	// layer uses these, so the preview must provide them to exercise real code.
+	const globals = globalThis as unknown as Record<string, unknown>;
+
+	globals.createEl = (tag: string, options?: ElOptions) =>
+		applyOptions(document.createElement(tag), options);
+	globals.createDiv = (options?: ElOptions) =>
+		applyOptions(document.createElement("div"), options);
+	globals.createSpan = (options?: ElOptions) =>
+		applyOptions(document.createElement("span"), options);
+
+	globals.createSvg = (tag: string, options?: ElOptions) => {
+		const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+		if (options?.cls) {
+			const classes = Array.isArray(options.cls) ? options.cls : options.cls.split(/\s+/);
+			el.setAttribute("class", classes.filter(Boolean).join(" "));
+		}
+		if (options?.attr) {
+			for (const [key, value] of Object.entries(options.attr)) el.setAttribute(key, value);
+		}
+		return el;
+	};
 }

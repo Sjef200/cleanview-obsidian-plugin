@@ -8,6 +8,9 @@ on:
 
 permissions:
   contents: write
+  # Required to sign build provenance for the release assets.
+  id-token: write
+  attestations: write
 
 jobs:
   build:
@@ -28,6 +31,15 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      # Lets anyone verify the released files were built from this repository
+      # and this commit, rather than uploaded by hand.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            main.js
+            styles.css
 
       - name: Verify the tag matches manifest.json
         run: |

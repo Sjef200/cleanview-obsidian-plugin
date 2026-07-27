@@ -35,7 +35,10 @@ export default class CleanViewPlugin extends Plugin {
 	private builtAfterCacheResolved = false;
 
 	async onload(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		// loadData() is typed `any`; narrow it before merging so a corrupt or
+		// hand-edited data.json cannot smuggle unexpected values into settings.
+		const stored = (await this.loadData()) as Partial<CleanViewSettings> | null;
+		this.settings = { ...DEFAULT_SETTINGS, ...(stored ?? {}) };
 		this.index = new VaultIndex(this.app);
 
 		this.registerMarkdownCodeBlockProcessor(

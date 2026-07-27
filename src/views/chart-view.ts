@@ -52,10 +52,10 @@ export function renderChart(
 
 	const dispose = onWidth(host, (width) => {
 		host.querySelector("svg")?.remove();
-		const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-		svg.setAttribute("class", "cleanview-svg");
-		svg.setAttribute("role", "img");
-		svg.setAttribute("aria-label", chartSummary(config.title, type, data));
+		const svg = createSvg("svg", {
+			cls: "cleanview-svg",
+			attr: { role: "img", "aria-label": chartSummary(config.title, type, data) },
+		});
 		host.insertBefore(svg, host.firstChild);
 
 		if (type === "line") renderLine(host, svg, data, width, tooltip, format);

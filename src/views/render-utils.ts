@@ -6,7 +6,7 @@
  * could be interpreted as markup.
  */
 
-import { type App, MarkdownRenderer, type Component, type TFile } from "obsidian";
+import { type App, type Component, MarkdownRenderer, TFile } from "obsidian";
 
 export function sectionHeader(parent: HTMLElement, title: string | undefined): void {
 	if (!title) return;
@@ -50,9 +50,10 @@ export function renderInline(
 /** Opens a file, scrolling to `line` when given. */
 export function openFileAt(app: App, path: string, line?: number, newLeaf = false): void {
 	const file = app.vault.getFileByPath(path);
-	if (!file) return;
+	// getFileByPath can return a non-file entry, so narrow rather than assert.
+	if (!(file instanceof TFile)) return;
 	const leaf = app.workspace.getLeaf(newLeaf);
-	void leaf.openFile(file as TFile, {
+	void leaf.openFile(file, {
 		eState: line !== undefined ? { line, scroll: line } : undefined,
 	});
 }
