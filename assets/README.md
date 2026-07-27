@@ -1,17 +1,29 @@
 # Screenshots
 
-Referenced from the root `README.md`. Obsidian renders that file on the plugin's
-detail page, outside GitHub's context, so every image link there must be an
-absolute `raw.githubusercontent.com` URL — relative paths resolve to nothing.
+Working folder for the community directory listing. The directory has its own
+upload fields — these files are not referenced from the plugin README, and
+nothing here ships in a release.
 
-Expected files:
+| Field | Size | Slots |
+|---|---|---|
+| Screenshots | 1200 x 800 (3:2) | up to 5 |
+| Mobile screenshots | 900 x 1600 (9:16) | up to 5 |
 
-| Filename | What it should show |
-|---|---|
-| `dashboard.png` | Top of a dashboard: date line, countdown cards, tasks due now |
-| `charts.png` | A bar chart and a donut chart together |
-| `builder.png` | The New dashboard block dialog, with the live preview visible |
-| `mobile.png` | The same dashboard on a phone, portrait |
+macOS screenshots are Retina and almost never match those ratios, and an
+iPhone screen is roughly 9:19.5. `resize.sh` scales each image to *cover* the
+target box and crops from the centre, so nothing is stretched:
 
-Take them against a real vault with demo content rather than personal notes.
-Dark theme reads better on the directory's dark background.
+    ./resize.sh desktop raw/*.png     # -> out/, 1200x800
+    ./resize.sh mobile  raw/phone.png # -> out/, 900x1600
+
+Upload what lands in `out/`. Originals are left untouched.
+
+## What to capture
+
+1. Top of a dashboard — date line, countdown cards, tasks due now
+2. A bar chart and a donut chart together
+3. The New dashboard block dialog, with the live preview visible
+4. Mobile: the same dashboard in portrait
+
+Shoot against demo content rather than personal notes, and prefer dark theme —
+the directory renders on a dark background.
