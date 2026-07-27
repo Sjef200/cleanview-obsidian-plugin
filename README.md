@@ -1,8 +1,8 @@
 # CleanView
 
-Fast, fully local dashboards for [Obsidian](https://obsidian.md). Task lists,
-tables, key figures, countdowns and hand-drawn SVG charts, in a ` ```cleanview `
-code block.
+Turn the notes you already have into live dashboards: tasks, tables, countdowns
+and charts that update as you type. Build them from a dialog instead of a query
+language. Nothing leaves your device.
 
 It reads the task syntax you already use — both the Tasks plugin's emoji
 shorthand and Dataview's inline fields — so it drops into an existing vault
