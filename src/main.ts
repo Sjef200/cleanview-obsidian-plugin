@@ -7,11 +7,13 @@
  */
 
 import {
+	ButtonComponent,
 	type MarkdownPostProcessorContext,
 	Notice,
 	Plugin,
 	PluginSettingTab,
 	Setting,
+	type SettingDefinitionItem,
 	TFile,
 	TFolder,
 } from "obsidian";
@@ -198,11 +200,68 @@ export default class CleanViewPlugin extends Plugin {
 	}
 }
 
+const PRIVACY_NOTE =
+	"CleanView makes no network requests, downloads nothing, and never executes " +
+	"JavaScript from your notes. Block configuration is data, not code.";
+
 class CleanViewSettingTab extends PluginSettingTab {
 	constructor(private readonly plugin: CleanViewPlugin) {
 		super(plugin.app, plugin);
 	}
 
+	/**
+	 * The declarative tab, used on Obsidian 1.13 and later.
+	 *
+	 * Describing the settings as data rather than building them by hand is what
+	 * lets Obsidian index them for its settings search. `display()` below stays
+	 * as the fallback for older versions — Obsidian ignores it whenever this
+	 * returns a non-empty array.
+	 */
+	getSettingDefinitions(): SettingDefinitionItem[] {
+		const stats = this.plugin.index.stats();
+
+		return [
+			{
+				name: "Index",
+				desc: this.plugin.index.ready
+					? `${stats.files} notes, ${stats.tasks} tasks (${stats.openTasks} open).`
+					: "Building…",
+				action: (el) => {
+					new ButtonComponent(el).setButtonText("Rebuild").onClick(async () => {
+						await this.plugin.index.build();
+						// Re-read the definitions so the counts above refresh.
+						this.update();
+					});
+				},
+			},
+			{
+				name: "Build index at startup",
+				desc:
+					"Reads the whole vault when Obsidian starts. Turn this off only if startup feels " +
+					"slow on a very large vault; the index is then built when you first open a dashboard.",
+				control: { type: "toggle", key: "rebuildOnStart" },
+			},
+			{
+				name: "Privacy",
+				desc: PRIVACY_NOTE,
+			},
+		];
+	}
+
+	/** Binds a control `key` to the plugin's settings object. */
+	getControlValue(key: string): unknown {
+		if (key === "rebuildOnStart") return this.plugin.settings.rebuildOnStart;
+		return undefined;
+	}
+
+	async setControlValue(key: string, value: unknown): Promise<void> {
+		if (key === "rebuildOnStart") {
+			this.plugin.settings.rebuildOnStart = Boolean(value);
+			await this.plugin.saveSettings();
+		}
+	}
+
+	/** Fallback for Obsidian older than 1.13.0, which has no declarative tab. */
 	display(): void {
 		const { containerEl } = this;
 		containerEl.empty();
@@ -239,11 +298,6 @@ class CleanViewSettingTab extends PluginSettingTab {
 		// heading element, so section headers match the rest of the settings UI.
 		new Setting(containerEl).setName("Privacy").setHeading();
 
-		containerEl.createEl("p", {
-			cls: "cleanview-about",
-			text:
-				"CleanView makes no network requests, downloads nothing, and never executes " +
-				"JavaScript from your notes. Block configuration is data, not code.",
-		});
+		containerEl.createEl("p", { cls: "cleanview-about", text: PRIVACY_NOTE });
 	}
 }
