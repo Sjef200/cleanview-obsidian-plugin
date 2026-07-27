@@ -4,8 +4,9 @@ Fast, fully local dashboards for [Obsidian](https://obsidian.md). Task lists,
 tables, key figures, countdowns and hand-drawn SVG charts, in a ` ```cleanview `
 code block.
 
-Written to replace a Dataview + Tasks + Tracker stack in a vault where Dataview
-had become too slow to use.
+It reads the task syntax you already use — both the Tasks plugin's emoji
+shorthand and Dataview's inline fields — so it drops into an existing vault
+without rewriting anything.
 
 ```cleanview
 view: tasks
@@ -16,26 +17,23 @@ filter:
 sort: [priority desc, due asc]
 ```
 
-## Why it is fast
+## How it works
 
-Dataview builds and maintains **its own** index of the vault, parallel to the
-one Obsidian already has, and re-runs each query through an interpreted query
-engine whenever anything changes.
+Four design choices account for most of its behaviour:
 
-CleanView does four things differently:
-
-1. **It reuses Obsidian's `metadataCache`.** Frontmatter, tags and checkbox
-   state are already parsed and in memory. CleanView reads that structure instead of
-   parsing markdown again.
+1. **It reuses Obsidian's `metadataCache`** rather than building a second index
+   of its own. Frontmatter, tags and checkbox state are already parsed and in
+   memory, so CleanView reads that structure instead of parsing markdown again.
 2. **It only reads files that actually contain tasks.** The cache reports which
    files have checkboxes before anything is read from disk. A vault of 5000
    notes where 200 contain tasks performs 200 reads, not 5000.
 3. **Editing costs no I/O.** `metadataCache.on("changed")` passes the new file
    contents as an argument, so re-indexing an edited note reads nothing.
 4. **Nothing is interpreted per row.** Filters and sorts compile to closures
-   once, when the block loads.
+   once, when the block loads, instead of being walked as configuration for
+   every task on every refresh.
 
-Measured on 20 000 tasks (`npm test`):
+`npm test` measures the query layer on 20 000 synthetic tasks:
 
 | Operation | Time |
 |---|---|
@@ -44,6 +42,11 @@ Measured on 20 000 tasks (`npm test`):
 
 A frame is 16 ms, so a block can be redrawn several times per frame.
 
+These are CleanView's own figures on its own benchmark, measured in Node rather
+than inside Obsidian. They are not a comparison against any other plugin — no
+such comparison has been run — and your vault will differ. Run `npm test`
+yourself to see the numbers on your machine.
+
 On top of that, a block only re-renders when a change is **relevant** to it: a
 block scoped with `from: School` ignores edits under `Projects/`, and blocks
 scrolled out of view are marked stale and catch up when they scroll back in.
@@ -51,9 +54,8 @@ scrolled out of view are marked stale and catch up when they scroll back in.
 ## Safety
 
 - **No network access.** No telemetry, no update check, no CDN.
-- **No `eval`.** Block configuration is data, not code. This includes the
-  replacement for `$= dv.date(...)`, so Dataview's JavaScript queries never need
-  to be enabled.
+- **No `eval`.** Block configuration is data, not code, including the dynamic
+  date and counter placeholders — so nothing in a note can execute.
 - **No dependencies.** `package.json` contains build tooling only; nothing from
   npm ends up in `main.js`. The charts are hand-written SVG.
 - **No Node APIs**, so it runs on iOS and Android.
