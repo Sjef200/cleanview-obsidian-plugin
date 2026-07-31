@@ -127,3 +127,91 @@ if (phone) {
 		ctx,
 	);
 }
+
+// --- every remaining view, built from the real render functions ------------
+
+import { renderTasks } from "../src/views/task-view";
+import { renderTable } from "../src/views/table-view";
+import { renderStat } from "../src/views/stat-view";
+import { renderText } from "../src/views/text-view";
+import { parseTaskLine } from "../src/core/task-parser";
+import { formatISO, today } from "../src/core/dates";
+import { compileSort } from "../src/query/sort";
+import { groupRows } from "../src/query/sort";
+
+const T = today();
+
+function task(line: string, file: string, folder: string, n: number) {
+	const status = /\[(.)\]/.exec(line)?.[1] ?? " ";
+	return parseTaskLine(
+		line,
+		{ position: { start: { line: n, col: 0, offset: 0 }, end: { line: n, col: 0, offset: 0 } }, parent: -1, task: status } as never,
+		`${folder}/${file}.md`, file, folder,
+	)!;
+}
+
+const demoTasks = [
+	task(`- [ ] Integration by parts 📅 ${formatISO(T - 2)} ⏫ #maths`, "Mathematics", "School", 1),
+	task(`- [ ] Read Hobsbawm, chapters 4-6 📅 ${formatISO(T)} 🔺`, "History", "School", 2),
+	task(`- [ ] Find three primary sources 📅 ${formatISO(T + 3)}`, "History", "School", 3),
+	task(`- [ ] Spectroscopy report 📅 ${formatISO(T + 5)} ⏫`, "Lab work", "School", 4),
+	task(`- [ ] Grammar exercises 🔁 every week 📅 ${formatISO(T + 8)} 🔽`, "Norwegian", "School", 5),
+	task(`- [ ] Presentation notes [due:: ${formatISO(T + 9)}] [priority:: high]`, "Norwegian", "School", 6),
+	task(`- [x] Titration write-up ✅ ${formatISO(T - 1)}`, "Lab work", "School", 7),
+	task(`- [ ] Book the lab`, "Lab work", "School", 8),
+];
+
+const demoFiles = [
+	{ path: "School/Mathematics.md", name: "Mathematics", folder: "School", mtime: Date.now() - 6e5,
+	  ctime: 0, size: 0, frontmatter: { status: "in progress" }, tags: ["maths"], taskCount: 7, openTaskCount: 5 },
+	{ path: "School/History.md", name: "History", folder: "School", mtime: Date.now() - 864e5,
+	  ctime: 0, size: 0, frontmatter: { status: "drafting" }, tags: [], taskCount: 5, openTaskCount: 4 },
+	{ path: "School/Norwegian.md", name: "Norwegian", folder: "School", mtime: Date.now() - 3 * 864e5,
+	  ctime: 0, size: 0, frontmatter: { status: "reading" }, tags: [], taskCount: 3, openTaskCount: 3 },
+	{ path: "School/Lab work.md", name: "Lab work", folder: "School", mtime: Date.now() - 7 * 864e5,
+	  ctime: 0, size: 0, frontmatter: { status: "waiting" }, tags: [], taskCount: 3, openTaskCount: 2 },
+];
+
+const fakeIndex = { stats: () => ({ files: 26, tasks: 18, openTasks: 14 }) } as never;
+const priorityOrder = compileSort(["priority desc", "due asc"], "tasks")!;
+
+function mountViews(prefix: string) {
+	const put = (id: string, fn: (el: HTMLElement) => void) => {
+		const host = document.getElementById(`${prefix}-${id}`);
+		if (host) fn(host);
+	};
+
+	put("text", (el) =>
+		renderText(el, { format: "{date} · week {week} · {open} open tasks in {notes} notes" }, fakeIndex));
+
+	put("tasks", (el) => {
+		const rows = [...demoTasks].filter((t) => !t.done).sort(priorityOrder);
+		renderTasks(el, { rows: rows as never, groups: null, total: rows.length },
+			{ view: "tasks", source: "tasks", title: "Open tasks" } as never, ctx);
+	});
+
+	put("grouped", (el) => {
+		const rows = demoTasks.filter((t) => !t.done) as never[];
+		renderTasks(el, { rows, groups: groupRows(rows, "file", "tasks"), total: rows.length },
+			{ view: "tasks", source: "tasks", title: "Grouped by note", group: "file" } as never, ctx);
+	});
+
+	put("table", (el) =>
+		renderTable(el, { rows: demoFiles as never, groups: null, total: demoFiles.length },
+			{ view: "table", source: "files", title: "Notes",
+			  columns: [
+				{ field: "name", label: "Note", link: true },
+				{ field: "status", label: "Status" },
+				{ field: "openTasks", label: "Open", format: "number" },
+				{ field: "mtimeMs", label: "Edited", format: "relative-ms" },
+			  ] } as never, ctx));
+
+	put("stat", (el) => {
+		renderStat(el, { rows: demoTasks.filter((t) => !t.done) as never, groups: null, total: 7 },
+			{ view: "stat", source: "tasks", title: "Open tasks", value: "count" } as never);
+		renderStat(el, { rows: demoTasks.filter((t) => t.done) as never, groups: null, total: 1 },
+			{ view: "stat", source: "tasks", title: "Done this week", value: "count", goal: 5 } as never);
+	});
+}
+
+for (const theme of ["light", "dark"]) mountViews(theme);
