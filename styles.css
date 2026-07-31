@@ -652,3 +652,54 @@
 	padding: 0.2em 0.6em;
 	cursor: pointer;
 }
+
+/* ================================================================== mobile
+
+   Obsidian sets `.is-mobile` on the body for both phone and tablet, and sizes
+   its own controls accordingly. These rules cover the controls this plugin
+   adds, which otherwise keep their mouse-sized hit areas.
+
+   The target is roughly 44px, the smallest area a fingertip hits reliably.
+   ========================================================================= */
+
+.is-mobile .cleanview-edit {
+	/* Always visible: a touch screen has no hover to reveal it. */
+	opacity: 0.6;
+	min-width: 40px;
+	min-height: 40px;
+}
+
+.is-mobile .cleanview-quick-date,
+.is-mobile .cleanview-more,
+.is-mobile .cleanview-table-toggle {
+	min-height: 40px;
+	padding-inline: 0.9em;
+}
+
+/* Opening a note is the most common tap in a dashboard, so the whole chip is
+   the target rather than just its text. */
+.is-mobile .cleanview-file,
+.is-mobile .cleanview-link {
+	display: inline-flex;
+	align-items: center;
+	min-height: 32px;
+	padding-inline: 0.5em;
+}
+
+.is-mobile .cleanview-check {
+	/* Obsidian sizes the box itself; this widens the area around it. */
+	padding: 0.4em;
+	margin: -0.4em -0.2em -0.4em -0.4em;
+}
+
+.is-mobile .cleanview-task {
+	padding-block: 0.5em;
+}
+
+/* A donut plus a legend beside it does not fit a phone. Give the ring the full
+   width and let the legend fall underneath. */
+@media (max-width: 480px) {
+	.cleanview-stat {
+		width: 100%;
+	}
+}
