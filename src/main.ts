@@ -45,7 +45,7 @@ export default class CleanViewPlugin extends Plugin {
 		this.registerMarkdownCodeBlockProcessor(
 			"cleanview",
 			(source: string, el: HTMLElement, ctx: MarkdownPostProcessorContext) => {
-				ctx.addChild(new CleanViewBlock(el, this.app, this.index, source, ctx.sourcePath));
+				ctx.addChild(new CleanViewBlock(el, this.app, this.index, source, ctx));
 			},
 		);
 

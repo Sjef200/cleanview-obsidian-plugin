@@ -14,7 +14,7 @@ import { compileSort } from "../src/query/sort";
 import { compileAggregator } from "../src/query/aggregate";
 import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
-import { DEFAULT_STATE, buildBlock, type BuilderState } from "../src/ui/block-spec";
+import { DEFAULT_STATE, buildBlock, toBuilderState, type BuilderState } from "../src/ui/block-spec";
 
 let passed = 0;
 let failed = 0;
@@ -307,6 +307,36 @@ console.log("\nBlock builder");
 		}
 	}
 	check("all 90 combinations are well-formed", malformed, 0);
+
+	// Every block the dialog can produce must be readable back into the same
+	// state, or the edit button would quietly rewrite the user's block.
+	let roundTripFailures = 0;
+	for (const view of views) {
+		for (const dueChoice of dues) {
+			for (const status of ["open", "done", "all"] as Array<BuilderState["status"]>) {
+				for (const folder of ["", "School"]) {
+					const original = { ...base, view, due: dueChoice, status, folder, title: "T" };
+					const block = buildBlock(original);
+					const read = toBuilderState(block);
+					if (!read || buildBlock(read) !== block) roundTripFailures++;
+				}
+			}
+		}
+	}
+	check("every generated block reads back identically", roundTripFailures, 0);
+
+	// Anything the dialog cannot express must be refused rather than mangled.
+	const handTuned = [
+		"```cleanview\nview: tasks\nfilter:\n  due: { from: today, to: today+3d }\n```",
+		"```cleanview\nview: table\nsource: files\ncolumns:\n  - { field: name }\n```",
+		"```cleanview\nview: tasks\nfilter:\n  text: { matches: chapter }\n```",
+		"```cleanview\nview: tasks\nlimit: 5\n```",
+	];
+	check(
+		"hand-tuned blocks are refused",
+		handTuned.map((b) => toBuilderState(b)),
+		[null, null, null, null],
+	);
 }
 
 // ------------------------------------------------------------- benchmark

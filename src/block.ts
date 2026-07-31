@@ -10,8 +10,10 @@
  *   - The config is parsed and the query compiled once, at load.
  */
 
-import { type App, MarkdownRenderChild } from "obsidian";
+import { type App, MarkdownRenderChild, type MarkdownPostProcessorContext, Notice, TFile, setIcon } from "obsidian";
 import type { VaultIndex } from "./core/index";
+import { BlockBuilderModal } from "./ui/block-builder";
+import { toBuilderState } from "./ui/block-spec";
 import { CompiledQuery, ConfigError, parseConfig } from "./query/query";
 import type { BlockConfig } from "./query/query";
 import { type ChartHandle, renderChart } from "./views/chart-view";
@@ -38,7 +40,7 @@ export class CleanViewBlock extends MarkdownRenderChild {
 		private readonly app: App,
 		private readonly index: VaultIndex,
 		private readonly source: string,
-		private readonly sourcePath: string,
+		private readonly ctx: MarkdownPostProcessorContext,
 	) {
 		super(containerEl);
 	}
@@ -111,6 +113,54 @@ export class CleanViewBlock extends MarkdownRenderChild {
 		this.render();
 	}
 
+	/**
+	 * Offers an edit button, but only for blocks the dialog can reproduce
+	 * exactly.
+	 *
+	 * `toBuilderState` refuses anything hand-tuned, and that refusal is the
+	 * whole safety mechanism: reopening a block with a custom column list or an
+	 * operator the dialog lacks would silently rewrite it into something
+	 * simpler. Those blocks stay text-only, which is the honest outcome.
+	 */
+	private addEditButton(): void {
+		const state = toBuilderState(`\u0060\u0060\u0060cleanview\n${this.source.trim()}\n\u0060\u0060\u0060`);
+		if (!state) return;
+
+		const button = this.containerEl.createEl("button", { cls: "cleanview-edit" });
+		setIcon(button, "pencil");
+		button.setAttr("aria-label", "Edit this block");
+		button.addEventListener("click", () => {
+			new BlockBuilderModal(this.app, (block) => void this.replaceSource(block), state).open();
+		});
+	}
+
+	/** Rewrites just this block's lines, leaving the rest of the note alone. */
+	private async replaceSource(block: string): Promise<void> {
+		const section = this.ctx.getSectionInfo(this.containerEl);
+		const file = this.app.vault.getFileByPath(this.ctx.sourcePath);
+		if (!section || !(file instanceof TFile)) {
+			new Notice("CleanView: could not locate this block in the note.");
+			return;
+		}
+
+		let failed = false;
+		await this.app.vault.process(file, (data) => {
+			const lines = data.split("\n");
+			const current = lines.slice(section.lineStart, section.lineEnd + 1).join("\n");
+			// The note may have been edited since it was rendered; only replace
+			// lines that are still the block we drew.
+			if (current.trim() !== section.text.trim()) {
+				failed = true;
+				return data;
+			}
+			const replacement = block.trim().split("\n");
+			lines.splice(section.lineStart, section.lineEnd - section.lineStart + 1, ...replacement);
+			return lines.join("\n");
+		});
+
+		if (failed) new Notice("CleanView: the note changed since this block was drawn. Nothing was edited.");
+	}
+
 	private render(): void {
 		if (!this.config || !this.query) return;
 
@@ -130,7 +180,8 @@ export class CleanViewBlock extends MarkdownRenderChild {
 
 		try {
 			const result = this.query.run(this.index);
-			const ctx = { app: this.app, component: this, sourcePath: this.sourcePath };
+			const ctx = { app: this.app, component: this, sourcePath: this.ctx.sourcePath };
+			this.addEditButton();
 
 			switch (this.config.view) {
 				case "tasks":

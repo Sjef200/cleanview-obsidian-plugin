@@ -12,16 +12,24 @@ import { type App, Modal, Setting, TFolder } from "obsidian";
 import { type BuilderState, DEFAULT_STATE, type ViewChoice, buildBlock } from "./block-spec";
 
 export class BlockBuilderModal extends Modal {
-	private state: BuilderState = { ...DEFAULT_STATE };
+	private state: BuilderState;
 	private preview!: HTMLElement;
 	private controls!: HTMLElement;
 
-	constructor(app: App, private readonly onInsert: (block: string) => void) {
+	constructor(
+		app: App,
+		private readonly onInsert: (block: string) => void,
+		initial?: BuilderState,
+	) {
 		super(app);
+		this.state = { ...(initial ?? DEFAULT_STATE) };
+		this.editing = initial !== undefined;
 	}
 
+	private readonly editing: boolean;
+
 	onOpen(): void {
-		this.titleEl.setText("New dashboard block");
+		this.titleEl.setText(this.editing ? "Edit block" : "New dashboard block");
 		const { contentEl } = this;
 		contentEl.addClass("cleanview-builder");
 
@@ -49,10 +57,13 @@ export class BlockBuilderModal extends Modal {
 			.setName("Title")
 			.setDesc("Optional heading above the block.")
 			.addText((t) =>
-				t.setPlaceholder("Leave empty for none").onChange((value) => {
-					this.state.title = value;
-					this.renderPreview();
-				}),
+				t
+					.setPlaceholder("Leave empty for none")
+					.setValue(this.state.title)
+					.onChange((value) => {
+						this.state.title = value;
+						this.renderPreview();
+					}),
 			);
 
 		// Everything below depends on the chosen view.
@@ -70,7 +81,7 @@ export class BlockBuilderModal extends Modal {
 			.addButton((b) => b.setButtonText("Cancel").onClick(() => this.close()))
 			.addButton((b) =>
 				b
-					.setButtonText("Insert")
+					.setButtonText(this.editing ? "Save" : "Insert")
 					.setCta()
 					.onClick(() => {
 						this.onInsert(buildBlock(this.state));
@@ -156,10 +167,13 @@ export class BlockBuilderModal extends Modal {
 			.setName("Tag")
 			.setDesc("Optional. Only include items with this tag.")
 			.addText((t) =>
-				t.setPlaceholder("e.g. school").onChange((value) => {
-					this.state.tag = value;
-					this.renderPreview();
-				}),
+				t
+					.setPlaceholder("e.g. school")
+					.setValue(this.state.tag)
+					.onChange((value) => {
+						this.state.tag = value;
+						this.renderPreview();
+					}),
 			);
 	}
 

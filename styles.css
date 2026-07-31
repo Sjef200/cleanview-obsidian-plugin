@@ -596,3 +596,43 @@
 		border-bottom: 1px solid CanvasText;
 	}
 }
+
+/* ------------------------------------------------------------ edit button */
+
+/* Only shown for blocks the dialog can reproduce exactly, and only on hover,
+   so a dashboard stays quiet while you read it. */
+.cleanview-block {
+	position: relative;
+}
+
+.cleanview-edit {
+	position: absolute;
+	top: 0;
+	right: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.25em;
+	background: var(--background-primary);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	box-shadow: none;
+	color: var(--text-muted);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.cleanview-block:hover .cleanview-edit,
+.cleanview-edit:focus-visible {
+	opacity: 1;
+}
+
+.cleanview-edit:hover {
+	color: var(--text-normal);
+}
+
+/* Touch devices have no hover, so the affordance is always visible there. */
+.is-mobile .cleanview-edit {
+	opacity: 0.6;
+}
