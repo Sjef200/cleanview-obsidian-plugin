@@ -703,3 +703,24 @@
 		width: 100%;
 	}
 }
+
+/* ------------------------------------------------------- editable task text */
+
+/* The affordance stays quiet: an underline on hover, not a permanent button.
+   A dashboard is read far more often than it is edited. */
+.cleanview-task-text.is-editable {
+	cursor: text;
+	border-radius: var(--radius-s);
+}
+
+.cleanview-task-text.is-editable:hover {
+	text-decoration: underline;
+	text-decoration-style: dotted;
+	text-underline-offset: 3px;
+	text-decoration-color: var(--text-faint);
+}
+
+.cleanview-task-text.is-editable:focus-visible {
+	outline: 2px solid var(--interactive-accent);
+	outline-offset: 2px;
+}

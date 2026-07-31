@@ -15,7 +15,7 @@ import { compileAggregator } from "../src/query/aggregate";
 import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
 import { DEFAULT_STATE, buildBlock, toBuilderState, type BuilderState } from "../src/ui/block-spec";
-import { DEFAULT_TASK, buildTaskLine, shiftInput, todayInput } from "../src/ui/task-spec";
+import { DEFAULT_TASK, buildTaskLine, dayNumToInput, rewriteTaskBody, shiftInput, todayInput } from "../src/ui/task-spec";
 
 let passed = 0;
 let failed = 0;
@@ -370,6 +370,60 @@ console.log("\nTask entry");
 	check("parser reads the emitted line", parsed.text, "Round trip");
 	check("parser reads the emitted due date", parsed.due, parseDate("2026-09-15"));
 	check("parser reads the emitted priority", parsed.priority, 4);
+}
+
+// ------------------------------------------------------ editing a task
+
+console.log("\nEditing a task");
+{
+	const edit = (raw: string, text: string, due: string, priority: number) =>
+		rewriteTaskBody(raw, { text, due, priority });
+
+	check("changes the due date",
+		edit("Read chapter 5 📅 2026-08-01", "Read chapter 5", "2026-09-15", 2),
+		"Read chapter 5 📅 2026-09-15");
+
+	check("adds a priority that was not there",
+		edit("Read chapter 5 📅 2026-08-01", "Read chapter 5", "2026-08-01", 5),
+		"Read chapter 5 🔺 📅 2026-08-01");
+
+	check("clearing the date removes the token",
+		edit("Read chapter 5 📅 2026-08-01 ⏫", "Read chapter 5", "", 4),
+		"Read chapter 5 ⏫");
+
+	// The dialog has no field for these, so losing them would be silent damage.
+	check("keeps recurrence",
+		edit("Water plants 🔁 every week 📅 2026-08-01", "Water plants", "2026-08-08", 2),
+		"Water plants 🔁 every week 📅 2026-08-08");
+	check("keeps scheduled and start dates",
+		edit("Essay ⏳ 2026-08-02 🛫 2026-08-01 📅 2026-08-10", "Essay", "2026-08-12", 2),
+		"Essay ⏳ 2026-08-02 🛫 2026-08-01 📅 2026-08-12");
+	check("keeps the created date",
+		edit("Thing ➕ 2026-07-01 📅 2026-08-01", "Thing", "2026-08-02", 2),
+		"Thing ➕ 2026-07-01 📅 2026-08-02");
+
+	// A file written in one dialect must not be converted to the other.
+	check("keeps the Dataview dialect",
+		edit("Notes [due:: 2026-08-01] [priority:: high]", "Notes", "2026-09-01", 4),
+		"Notes [priority:: high] [due:: 2026-09-01]");
+	check("keeps the emoji dialect",
+		edit("Notes 📅 2026-08-01 ⏫", "Notes", "2026-09-01", 4),
+		"Notes ⏫ 📅 2026-09-01");
+
+	check("tags in the text survive",
+		edit("Revise #maths #exam 📅 2026-08-01", "Revise #maths #exam", "2026-08-05", 2),
+		"Revise #maths #exam 📅 2026-08-05");
+
+	check("dayNumToInput round-trips", dayNumToInput(parseDate("2026-11-21")), "2026-11-21");
+	check("dayNumToInput handles no date", dayNumToInput(undefined), "");
+
+	// Whatever the editor writes, the parser must read back.
+	const rewritten = edit("Old text 🔁 every week 📅 2026-08-01 🔽", "New text", "2026-12-24", 5);
+	const reparsed = parse(`- [ ] ${rewritten}`);
+	check("reparsed text", reparsed.text, "New text");
+	check("reparsed due", reparsed.due, parseDate("2026-12-24"));
+	check("reparsed priority", reparsed.priority, 5);
+	check("reparsed recurrence", reparsed.recurrence, "every week");
 }
 
 // ------------------------------------------------------------- benchmark

@@ -64,3 +64,62 @@ export function shiftInput(value: string, days: number): string {
 	base.setUTCDate(base.getUTCDate() + days);
 	return base.toISOString().slice(0, 10);
 }
+
+/** Metadata the dialog does not touch, which must survive an edit untouched. */
+const CARRIED_EMOJI = /(⏳|🛫|➕|✅)\s*\d{4}-\d{2}-\d{2}/gu;
+const CARRIED_RECURRENCE = /🔁\s*[^📅⏳🛫➕✅🔺⏫🔼🔽⏬\n]*/u;
+const CARRIED_INLINE = /\[\s*(scheduled|start|created|completion|done|repeat|recurrence)\s*::[^\]]*\]/giu;
+
+/** True when the line was written in Dataview's inline-field dialect. */
+function usesInlineFields(raw: string): boolean {
+	return /\[\s*(due|priority|frist|prioritet)\s*::/iu.test(raw);
+}
+
+const PRIORITY_WORD: Record<number, string> = {
+	5: "highest", 4: "high", 3: "medium", 1: "low", 0: "lowest",
+};
+
+/**
+ * Rewrites a task's body with a new text, due date and priority, carrying
+ * everything else across.
+ *
+ * Two rules govern this, and both exist to avoid changing something the user
+ * did not ask to change:
+ *
+ *   - Metadata the dialog has no field for — scheduled, start, created,
+ *     completion, recurrence — is extracted from the original and re-appended.
+ *     Rebuilding from the parsed fields alone would drop it silently.
+ *   - The line keeps its own dialect. A task written with `[due:: …]` is
+ *     rewritten with inline fields, not converted to emoji, because the file
+ *     is the user's and its style is theirs.
+ */
+export function rewriteTaskBody(raw: string, edits: NewTask): string {
+	const inline = usesInlineFields(raw);
+
+	const carried: string[] = [];
+	const recurrence = CARRIED_RECURRENCE.exec(raw);
+	if (recurrence) carried.push(recurrence[0].trim());
+	for (const match of raw.matchAll(CARRIED_EMOJI)) carried.push(match[0].trim());
+	for (const match of raw.matchAll(CARRIED_INLINE)) carried.push(match[0].trim());
+
+	const parts = [edits.text.trim() || "New task", ...carried];
+
+	if (edits.priority !== 2) {
+		parts.push(inline
+			? `[priority:: ${PRIORITY_WORD[edits.priority]}]`
+			: PRIORITY_EMOJI[edits.priority]);
+	}
+	if (/^\d{4}-\d{2}-\d{2}$/.test(edits.due)) {
+		parts.push(inline ? `[due:: ${edits.due}]` : `📅 ${edits.due}`);
+	}
+
+	return parts.filter(Boolean).join(" ").replace(/\s{2,}/g, " ").trim();
+}
+
+/** Day number back to the YYYY-MM-DD a date input expects. */
+export function dayNumToInput(day: number | undefined): string {
+	if (day === undefined) return "";
+	const d = new Date(day * 86_400_000);
+	const month = String(d.getUTCMonth() + 1).padStart(2, "0");
+	return `${d.getUTCFullYear()}-${month}-${String(d.getUTCDate()).padStart(2, "0")}`;
+}

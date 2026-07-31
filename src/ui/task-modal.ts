@@ -18,22 +18,29 @@ import {
 } from "./task-spec";
 
 export class TaskModal extends Modal {
-	private task: NewTask = { ...DEFAULT_TASK };
+	private task: NewTask;
+	private readonly editing: boolean;
 	private preview!: HTMLElement;
 	private dueInput!: HTMLInputElement;
 
-	constructor(app: App, private readonly onSubmit: (line: string) => void) {
+	constructor(
+		app: App,
+		private readonly onSubmit: (task: NewTask) => void,
+		initial?: NewTask,
+	) {
 		super(app);
+		this.task = { ...(initial ?? DEFAULT_TASK) };
+		this.editing = initial !== undefined;
 	}
 
 	onOpen(): void {
-		this.titleEl.setText("Add task");
+		this.titleEl.setText(this.editing ? "Edit task" : "Add task");
 		const { contentEl } = this;
 
 		new Setting(contentEl)
 			.setName("Task")
 			.addText((t) => {
-				t.setPlaceholder("What needs doing").onChange((value) => {
+				t.setPlaceholder("What needs doing").setValue(this.task.text).onChange((value) => {
 					this.task.text = value;
 					this.renderPreview();
 				});
@@ -49,6 +56,7 @@ export class TaskModal extends Modal {
 
 		const dueSetting = new Setting(contentEl).setName("Due").setDesc("Optional.");
 		this.dueInput = dueSetting.controlEl.createEl("input", { type: "date" });
+		this.dueInput.value = this.task.due;
 		this.dueInput.addEventListener("change", () => {
 			this.task.due = this.dueInput.value;
 			this.renderPreview();
@@ -92,7 +100,7 @@ export class TaskModal extends Modal {
 
 		new Setting(contentEl)
 			.addButton((b) => b.setButtonText("Cancel").onClick(() => this.close()))
-			.addButton((b) => b.setButtonText("Add").setCta().onClick(() => this.submit()));
+			.addButton((b) => b.setButtonText(this.editing ? "Save" : "Add").setCta().onClick(() => this.submit()));
 	}
 
 	onClose(): void {
@@ -100,11 +108,14 @@ export class TaskModal extends Modal {
 	}
 
 	private submit(): void {
-		this.onSubmit(buildTaskLine(this.task));
+		this.onSubmit({ ...this.task });
 		this.close();
 	}
 
 	private renderPreview(): void {
+		// In edit mode the real line is composed by rewriteTaskBody, which also
+		// carries across metadata this dialog has no field for. The preview
+		// shows the shape rather than pretending to be the final line.
 		this.preview.setText(buildTaskLine(this.task));
 	}
 }

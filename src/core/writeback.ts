@@ -96,3 +96,45 @@ function toggleLine(line: string): string {
 	const withoutStaleDate = body.replace(DONE_DATE, "").trimEnd();
 	return `${match[1]}x${match[3]}${withoutStaleDate} ✅ ${formatISO(today())}`;
 }
+
+/**
+ * Replaces a task's body, keeping its checkbox and indentation.
+ *
+ * Shares `locateTask` with the checkbox toggle, so the same rule applies: if
+ * the line cannot be re-identified, nothing is written. An edit dialog that
+ * silently rewrote the wrong line would be far worse than one that refuses.
+ */
+export async function updateTaskInFile(
+	app: App,
+	task: CleanViewTask,
+	newBody: string,
+): Promise<boolean> {
+	const file = app.vault.getFileByPath(task.path);
+	if (!(file instanceof TFile)) {
+		new Notice(`CleanView: could not find "${task.path}"`);
+		return false;
+	}
+
+	let ok = true;
+	await app.vault.process(file, (data) => {
+		const lines = data.split("\n");
+		const index = locateTask(lines, task);
+		if (index === null) {
+			ok = false;
+			return data;
+		}
+		const match = CHECKBOX.exec(lines[index]);
+		if (!match) {
+			ok = false;
+			return data;
+		}
+		// match[0] carries the indent, bullet and checkbox; only the body changes.
+		lines[index] = match[0] + newBody;
+		return lines.join("\n");
+	});
+
+	if (!ok) {
+		new Notice("CleanView: that task moved since the view was rendered. Nothing was changed.", 6000);
+	}
+	return ok;
+}

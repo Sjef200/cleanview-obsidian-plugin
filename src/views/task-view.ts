@@ -13,7 +13,9 @@ import { formatISO, formatRelativeDay, today } from "../core/dates";
 import type { BlockConfig, QueryResult } from "../query/query";
 import type { Group } from "../query/sort";
 import { emptyState, openFileAt, renderCapped, renderInline, sectionHeader } from "./render-utils";
-import { toggleTaskInFile } from "../core/writeback";
+import { toggleTaskInFile, updateTaskInFile } from "../core/writeback";
+import { TaskModal } from "../ui/task-modal";
+import { dayNumToInput, rewriteTaskBody } from "../ui/task-spec";
 
 const DEFAULT_CAP = 50;
 
@@ -94,6 +96,22 @@ function renderTask(
 	const text = body.createDiv({ cls: "cleanview-task-text" });
 	renderInline(ctx.app, ctx.component, text, task.text || "(empty task)", ctx.sourcePath);
 
+	// Clicking the text edits the task in place, so a dashboard is somewhere you
+	// work rather than only somewhere you look. Links inside the text keep their
+	// own behaviour.
+	text.addClass("is-editable");
+	text.setAttr("role", "button");
+	text.setAttr("tabindex", "0");
+	const edit = (event: Event) => {
+		if ((event.target as HTMLElement).closest("a")) return;
+		event.preventDefault();
+		openTaskEditor(task, ctx);
+	};
+	text.addEventListener("click", edit);
+	text.addEventListener("keydown", (event) => {
+		if (event.key === "Enter") edit(event);
+	});
+
 	const meta = body.createDiv({ cls: "cleanview-meta" });
 
 	if (show.has("priority") && task.priority !== PRIORITY_NONE) {
@@ -129,4 +147,16 @@ function renderTask(
 			if (event.key === "Enter" || event.key === " ") open(event);
 		});
 	}
+}
+
+/** Opens the task editor and writes the result back to the source note. */
+function openTaskEditor(task: CleanViewTask, ctx: ViewContext): void {
+	new TaskModal(
+		ctx.app,
+		(edited) => {
+			const body = rewriteTaskBody(task.raw, edited);
+			if (body !== task.raw) void updateTaskInFile(ctx.app, task, body);
+		},
+		{ text: task.text, due: dayNumToInput(task.due), priority: task.priority },
+	).open();
 }

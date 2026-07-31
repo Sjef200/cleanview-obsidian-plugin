@@ -20,6 +20,7 @@ import { CleanViewBlock } from "./block";
 import { VaultIndex } from "./core/index";
 import { BlockBuilderModal } from "./ui/block-builder";
 import { TaskModal } from "./ui/task-modal";
+import { buildTaskLine } from "./ui/task-spec";
 
 interface CleanViewSettings {
 	/** Rebuild the whole index at startup instead of trusting incremental updates. */
@@ -149,7 +150,8 @@ export default class CleanViewPlugin extends Plugin {
 			id: "add-task",
 			name: "Add task",
 			editorCallback: (editor) => {
-				new TaskModal(this.app, (line) => {
+				new TaskModal(this.app, (task) => {
+					const line = buildTaskLine(task);
 					// Land on a line of its own rather than splicing into prose.
 					const cursor = editor.getCursor();
 					const current = editor.getLine(cursor.line);
