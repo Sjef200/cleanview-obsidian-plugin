@@ -15,6 +15,7 @@ import { compileAggregator } from "../src/query/aggregate";
 import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
 import { DEFAULT_STATE, buildBlock, toBuilderState, type BuilderState } from "../src/ui/block-spec";
+import { DEFAULT_TASK, buildTaskLine, shiftInput, todayInput } from "../src/ui/task-spec";
 
 let passed = 0;
 let failed = 0;
@@ -337,6 +338,38 @@ console.log("\nBlock builder");
 		handTuned.map((b) => toBuilderState(b)),
 		[null, null, null, null],
 	);
+}
+
+// ----------------------------------------------------------- task entry
+
+console.log("\nTask entry");
+{
+	check("bare task", buildTaskLine({ ...DEFAULT_TASK, text: "Read chapter 5" }),
+		"- [ ] Read chapter 5");
+	check("with due date", buildTaskLine({ ...DEFAULT_TASK, text: "Essay", due: "2026-08-04" }),
+		"- [ ] Essay 📅 2026-08-04");
+	check("with priority", buildTaskLine({ ...DEFAULT_TASK, text: "Exam", priority: 5, due: "2026-11-21" }),
+		"- [ ] Exam 🔺 📅 2026-11-21");
+	check("normal priority writes no emoji", buildTaskLine({ ...DEFAULT_TASK, text: "X", priority: 2 }),
+		"- [ ] X");
+	check("empty text still yields a valid line", buildTaskLine(DEFAULT_TASK), "- [ ] New task");
+
+	// A malformed date must never reach the note: it would look fine and then
+	// silently fail to match every date filter.
+	check("malformed date is dropped", buildTaskLine({ ...DEFAULT_TASK, text: "X", due: "04.08.2026" }),
+		"- [ ] X");
+
+	check("shiftInput crosses a month boundary", shiftInput("2026-07-31", 1), "2026-08-01");
+	check("shiftInput crosses a year boundary", shiftInput("2026-12-31", 1), "2027-01-01");
+	check("shiftInput handles a leap day", shiftInput("2028-02-28", 1), "2028-02-29");
+	ok("todayInput is YYYY-MM-DD", /^\d{4}-\d{2}-\d{2}$/.test(todayInput()));
+
+	// Whatever the dialog writes, the parser has to read back.
+	const line = buildTaskLine({ text: "Round trip", due: "2026-09-15", priority: 4 });
+	const parsed = parse(line);
+	check("parser reads the emitted line", parsed.text, "Round trip");
+	check("parser reads the emitted due date", parsed.due, parseDate("2026-09-15"));
+	check("parser reads the emitted priority", parsed.priority, 4);
 }
 
 // ------------------------------------------------------------- benchmark

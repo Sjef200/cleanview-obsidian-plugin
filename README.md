@@ -91,6 +91,18 @@ Not yet in the community plugin browser. To install manually, copy `main.js`,
 [release](../../releases) into `<vault>/.obsidian/plugins/cleanview/`, then enable
 the plugin in *Settings → Community plugins*.
 
+## Getting started
+
+1. Put the cursor where the dashboard should go.
+2. Run **CleanView: New dashboard block** from the command palette.
+3. Pick the options from the dropdowns and press Insert.
+
+The dialog shows the block as you build it. To change one later, hover it and
+click the pencil — the same dialog reopens with your settings loaded.
+
+Date-filtered blocks need tasks that carry dates. **CleanView: Add task** asks
+for three things — what, when, how urgent — and writes the line for you.
+
 ## Block reference
 
 Every block starts with ` ```cleanview ` and contains YAML.

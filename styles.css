@@ -636,3 +636,19 @@
 .is-mobile .cleanview-edit {
 	opacity: 0.6;
 }
+
+/* --------------------------------------------------------- quick date row */
+
+.cleanview-quick-dates {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.4em;
+	margin: -0.4em 0 0.8em;
+	justify-content: flex-end;
+}
+
+.cleanview-quick-date {
+	font-size: var(--font-ui-smaller);
+	padding: 0.2em 0.6em;
+	cursor: pointer;
+}

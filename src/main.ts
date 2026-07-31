@@ -19,6 +19,7 @@ import {
 import { CleanViewBlock } from "./block";
 import { VaultIndex } from "./core/index";
 import { BlockBuilderModal } from "./ui/block-builder";
+import { TaskModal } from "./ui/task-modal";
 
 interface CleanViewSettings {
 	/** Rebuild the whole index at startup instead of trusting incremental updates. */
@@ -141,6 +142,19 @@ export default class CleanViewPlugin extends Plugin {
 					`CleanView: indexed ${stats.files} notes and ${stats.tasks} tasks in ${elapsed} ms`,
 					5000,
 				);
+			},
+		});
+
+		this.addCommand({
+			id: "add-task",
+			name: "Add task",
+			editorCallback: (editor) => {
+				new TaskModal(this.app, (line) => {
+					// Land on a line of its own rather than splicing into prose.
+					const cursor = editor.getCursor();
+					const current = editor.getLine(cursor.line);
+					editor.replaceSelection(current.trim() ? `\n${line}` : line);
+				}).open();
 			},
 		});
 
