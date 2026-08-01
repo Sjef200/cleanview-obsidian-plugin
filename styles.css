@@ -769,10 +769,11 @@
 }
 
 .cleanview-task-text.is-editable:hover {
-	text-decoration: underline;
-	text-decoration-style: dotted;
+	/* The shorthand form, rather than the text-decoration-style/-color
+	   longhands: those are only partially supported on the older end of
+	   Obsidian's Chromium range, while the combined shorthand is not. */
+	text-decoration: underline dotted var(--text-faint);
 	text-underline-offset: 3px;
-	text-decoration-color: var(--text-faint);
 }
 
 .cleanview-task-text.is-editable:focus-visible {
