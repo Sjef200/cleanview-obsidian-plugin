@@ -15,7 +15,7 @@ import type { Group } from "../query/sort";
 import { emptyState, openFileAt, renderCapped, renderInline, sectionHeader } from "./render-utils";
 import { toggleTaskInFile, updateTaskInFile } from "../core/writeback";
 import { TaskModal } from "../ui/task-modal";
-import { dayNumToInput, rewriteTaskBody } from "../ui/task-spec";
+import { dayNumToInput, hoursToInput, rewriteTaskBody } from "../ui/task-spec";
 
 const DEFAULT_CAP = 50;
 
@@ -134,6 +134,10 @@ function renderTask(
 		meta.createSpan({ cls: "cleanview-chip", text: `scheduled ${formatRelativeDay(task.scheduled)}` });
 	}
 
+	if (show.has("estimate") && task.estimate !== undefined) {
+		meta.createSpan({ cls: "cleanview-chip", text: `${task.estimate}h` });
+	}
+
 	if (show.has("file")) {
 		const link = meta.createSpan({ cls: "cleanview-chip cleanview-file", text: task.fileName });
 		link.setAttr("role", "link");
@@ -157,6 +161,11 @@ function openTaskEditor(task: CleanViewTask, ctx: ViewContext): void {
 			const body = rewriteTaskBody(task.raw, edited);
 			if (body !== task.raw) void updateTaskInFile(ctx.app, task, body);
 		},
-		{ text: task.text, due: dayNumToInput(task.due), priority: task.priority },
+		{
+			text: task.text,
+			due: dayNumToInput(task.due),
+			priority: task.priority,
+			estimate: hoursToInput(task.estimate),
+		},
 	).open();
 }

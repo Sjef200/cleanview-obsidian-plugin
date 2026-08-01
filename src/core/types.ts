@@ -34,6 +34,8 @@ export interface CleanViewTask {
 	/** 0 lowest … 5 highest, 2 = no explicit priority (matches the Tasks plugin). */
 	priority: number;
 	recurrence?: string;
+	/** Estimated hours of work. Not part of either upstream dialect. */
+	estimate?: number;
 	/** Tags on the line, without the leading '#'. */
 	tags: string[];
 }

@@ -21,9 +21,11 @@ export interface NewTask {
 	due: string;
 	/** 0 lowest … 5 highest; 2 means unmarked. */
 	priority: number;
+	/** Raw text input, hours; "" means no estimate. */
+	estimate: string;
 }
 
-export const DEFAULT_TASK: NewTask = { text: "", due: "", priority: 2 };
+export const DEFAULT_TASK: NewTask = { text: "", due: "", priority: 2, estimate: "" };
 
 /**
  * Renders the markdown line.
@@ -44,6 +46,9 @@ export function buildTaskLine(task: NewTask): string {
 	// Guard the date rather than trusting the input element: a malformed value
 	// would otherwise be written into the note and silently never match a filter.
 	if (/^\d{4}-\d{2}-\d{2}$/.test(task.due)) parts.push(`📅 ${task.due}`);
+
+	const hours = Number(task.estimate.replace(",", "."));
+	if (Number.isFinite(hours) && hours > 0) parts.push(`⏱️ ${hours}h`);
 
 	return parts.join(" ");
 }
@@ -72,7 +77,7 @@ const CARRIED_INLINE = /\[\s*(scheduled|start|created|completion|done|repeat|rec
 
 /** True when the line was written in Dataview's inline-field dialect. */
 function usesInlineFields(raw: string): boolean {
-	return /\[\s*(due|priority|frist|prioritet)\s*::/iu.test(raw);
+	return /\[\s*(due|priority|frist|prioritet|estimate|estimat)\s*::/iu.test(raw);
 }
 
 const PRIORITY_WORD: Record<number, string> = {
@@ -113,6 +118,11 @@ export function rewriteTaskBody(raw: string, edits: NewTask): string {
 		parts.push(inline ? `[due:: ${edits.due}]` : `📅 ${edits.due}`);
 	}
 
+	const hours = Number(edits.estimate.replace(",", "."));
+	if (Number.isFinite(hours) && hours > 0) {
+		parts.push(inline ? `[estimate:: ${hours}]` : `⏱️ ${hours}h`);
+	}
+
 	return parts.filter(Boolean).join(" ").replace(/\s{2,}/g, " ").trim();
 }
 
@@ -122,4 +132,9 @@ export function dayNumToInput(day: number | undefined): string {
 	const d = new Date(day * 86_400_000);
 	const month = String(d.getUTCMonth() + 1).padStart(2, "0");
 	return `${d.getUTCFullYear()}-${month}-${String(d.getUTCDate()).padStart(2, "0")}`;
+}
+
+/** Parsed estimate back to the text a number input expects. */
+export function hoursToInput(hours: number | undefined): string {
+	return hours === undefined ? "" : String(hours);
 }

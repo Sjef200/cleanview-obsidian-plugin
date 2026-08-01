@@ -15,7 +15,7 @@ import { compileAggregator } from "../src/query/aggregate";
 import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
 import { DEFAULT_STATE, buildBlock, toBuilderState, type BuilderState } from "../src/ui/block-spec";
-import { DEFAULT_TASK, buildTaskLine, dayNumToInput, rewriteTaskBody, shiftInput, todayInput } from "../src/ui/task-spec";
+import { DEFAULT_TASK, buildTaskLine, dayNumToInput, hoursToInput, rewriteTaskBody, shiftInput, todayInput } from "../src/ui/task-spec";
 
 let passed = 0;
 let failed = 0;
@@ -365,19 +365,37 @@ console.log("\nTask entry");
 	ok("todayInput is YYYY-MM-DD", /^\d{4}-\d{2}-\d{2}$/.test(todayInput()));
 
 	// Whatever the dialog writes, the parser has to read back.
-	const line = buildTaskLine({ text: "Round trip", due: "2026-09-15", priority: 4 });
+	const line = buildTaskLine({ text: "Round trip", due: "2026-09-15", priority: 4, estimate: "" });
 	const parsed = parse(line);
 	check("parser reads the emitted line", parsed.text, "Round trip");
 	check("parser reads the emitted due date", parsed.due, parseDate("2026-09-15"));
 	check("parser reads the emitted priority", parsed.priority, 4);
+
+	// Estimates, both dialects and the round trip.
+	check("with estimate", buildTaskLine({ ...DEFAULT_TASK, text: "Lab report", estimate: "4" }),
+		"- [ ] Lab report ⏱️ 4h");
+	check("estimate accepts a comma decimal", buildTaskLine({ ...DEFAULT_TASK, text: "X", estimate: "1,5" }),
+		"- [ ] X ⏱️ 1.5h");
+	check("zero estimate writes nothing", buildTaskLine({ ...DEFAULT_TASK, text: "X", estimate: "0" }),
+		"- [ ] X");
+	check("estimate parses from the emoji dialect", parse("- [ ] Lab report ⏱️ 4h").estimate, 4);
+	check("estimate parses a comma decimal", parse("- [ ] X ⏱️ 1,5h").estimate, 1.5);
+	check("estimate parses from the Dataview dialect", parse("- [ ] X [estimate:: 4]").estimate, 4);
+	check("no estimate is undefined", parse("- [ ] Plain task").estimate, undefined);
+
+	check("hoursToInput round-trips", hoursToInput(4), "4");
+	check("hoursToInput handles no estimate", hoursToInput(undefined), "");
+
+	const withEstimate = buildTaskLine({ text: "Round trip", due: "", priority: 2, estimate: "2.5" });
+	check("reparsed estimate", parse(withEstimate).estimate, 2.5);
 }
 
 // ------------------------------------------------------ editing a task
 
 console.log("\nEditing a task");
 {
-	const edit = (raw: string, text: string, due: string, priority: number) =>
-		rewriteTaskBody(raw, { text, due, priority });
+	const edit = (raw: string, text: string, due: string, priority: number, estimate = "") =>
+		rewriteTaskBody(raw, { text, due, priority, estimate });
 
 	check("changes the due date",
 		edit("Read chapter 5 📅 2026-08-01", "Read chapter 5", "2026-09-15", 2),
@@ -424,6 +442,26 @@ console.log("\nEditing a task");
 	check("reparsed due", reparsed.due, parseDate("2026-12-24"));
 	check("reparsed priority", reparsed.priority, 5);
 	check("reparsed recurrence", reparsed.recurrence, "every week");
+
+	// Estimate is a dialog-owned field, so it is set or cleared directly —
+	// unlike recurrence above, it is never blindly carried across.
+	check("sets an estimate that was not there",
+		edit("Read chapter 5 📅 2026-08-01", "Read chapter 5", "2026-08-01", 2, "3"),
+		"Read chapter 5 📅 2026-08-01 ⏱️ 3h");
+	check("changes an existing estimate",
+		edit("Lab report ⏱️ 2h", "Lab report", "", 2, "5"),
+		"Lab report ⏱️ 5h");
+	check("clearing the estimate removes the token",
+		edit("Lab report ⏱️ 2h", "Lab report", "", 2, ""),
+		"Lab report");
+	check("keeps the Dataview dialect for estimate",
+		edit("Notes [due:: 2026-08-01] [estimate:: 2]", "Notes", "2026-08-01", 2, "3"),
+		"Notes [due:: 2026-08-01] [estimate:: 3]");
+	// The dialect can be signalled by the estimate field alone, with no due or
+	// priority present to detect it from.
+	check("detects the Dataview dialect from estimate alone",
+		edit("Notes [estimate:: 2]", "Notes", "", 2, "3"),
+		"Notes [estimate:: 3]");
 }
 
 // ------------------------------------------------------------- benchmark

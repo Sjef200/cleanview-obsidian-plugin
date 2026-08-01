@@ -43,6 +43,8 @@ const EMOJI_TOKEN = /(📅|⏳|🛫|➕|✅|🔺|⏫|🔼|🔽|⏬)\s*([^\s📅�
  * the end of the line.
  */
 const RECURRENCE = /🔁\s*([^📅⏳🛫➕✅🔺⏫🔼🔽⏬\n]*)/u;
+/** An estimate in hours: `⏱️ 4h`, `⏱️ 1,5h`. Not part of either upstream dialect. */
+const ESTIMATE = /⏱️\s*(\d+(?:[.,]\d+)?)\s*h?/u;
 /** A #tag, excluding those inside a URL or code. */
 const TAG = /(^|\s)#([\p{L}\p{N}/_-]+)/gu;
 /** `- [ ] ` / `* [x] ` / `1. [ ] ` prefix. */
@@ -93,6 +95,9 @@ export function parseTaskLine(
 	// Recurrence must come out before the date markers, since it is the only
 	// token whose value may contain spaces.
 	text = extractRecurrence(text, task);
+	// ⏱️ is not part of EMOJI_TOKEN's alternation, so extractEmoji would leave
+	// it untouched; it must be stripped in its own pass.
+	text = extractEstimate(text, task);
 	text = extractEmoji(text, task);
 	extractTags(text, task);
 
@@ -140,6 +145,15 @@ function extractInlineFields(text: string, task: CleanViewTask): string {
 			return " ";
 		}
 
+		if (key === "estimate" || key === "estimat") {
+			const hours = Number(value.replace(",", ".").replace(/h$/i, "").trim());
+			if (Number.isFinite(hours) && hours > 0) {
+				task.estimate = hours;
+				return " ";
+			}
+			return match;
+		}
+
 		// Unknown field: leave it in place rather than silently eating content.
 		return match;
 	});
@@ -150,6 +164,16 @@ function extractRecurrence(text: string, task: CleanViewTask): string {
 	return text.replace(RECURRENCE, (_match, rest: string) => {
 		const value = rest.trim();
 		if (value) task.recurrence = value;
+		return " ";
+	});
+}
+
+function extractEstimate(text: string, task: CleanViewTask): string {
+	if (!text.includes("⏱️")) return text;
+	return text.replace(ESTIMATE, (match, rawHours: string) => {
+		const hours = Number(rawHours.replace(",", "."));
+		if (!Number.isFinite(hours) || hours <= 0) return match;
+		task.estimate = hours;
 		return " ";
 	});
 }

@@ -91,6 +91,19 @@ export class TaskModal extends Modal {
 					}),
 			);
 
+		new Setting(contentEl)
+			.setName("Estimate (hours)")
+			.setDesc("Optional. Feeds the capacity view.")
+			.addText((t) => {
+				t.inputEl.type = "number";
+				t.inputEl.min = "0";
+				t.inputEl.step = "0.5";
+				t.setPlaceholder("e.g. 4").setValue(this.task.estimate).onChange((value) => {
+					this.task.estimate = value;
+					this.renderPreview();
+				});
+			});
+
 		contentEl.createEl("p", {
 			cls: "cleanview-builder-hint",
 			text: "This is the line that will be inserted.",

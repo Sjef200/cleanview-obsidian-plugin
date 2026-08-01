@@ -151,12 +151,12 @@ function task(line: string, file: string, folder: string, n: number) {
 }
 
 const demoTasks = [
-	task(`- [ ] Integration by parts 📅 ${formatISO(T - 2)} ⏫ #maths`, "Mathematics", "School", 1),
-	task(`- [ ] Read Hobsbawm, chapters 4-6 📅 ${formatISO(T)} 🔺`, "History", "School", 2),
-	task(`- [ ] Find three primary sources 📅 ${formatISO(T + 3)}`, "History", "School", 3),
+	task(`- [ ] Integration by parts 📅 ${formatISO(T - 2)} ⏫ ⏱️ 3h #maths`, "Mathematics", "School", 1),
+	task(`- [ ] Read Hobsbawm, chapters 4-6 📅 ${formatISO(T)} 🔺 ⏱️ 2h`, "History", "School", 2),
+	task(`- [ ] Find three primary sources 📅 ${formatISO(T + 3)} ⏱️ 1,5h`, "History", "School", 3),
 	task(`- [ ] Spectroscopy report 📅 ${formatISO(T + 5)} ⏫`, "Lab work", "School", 4),
 	task(`- [ ] Grammar exercises 🔁 every week 📅 ${formatISO(T + 8)} 🔽`, "Norwegian", "School", 5),
-	task(`- [ ] Presentation notes [due:: ${formatISO(T + 9)}] [priority:: high]`, "Norwegian", "School", 6),
+	task(`- [ ] Presentation notes [due:: ${formatISO(T + 9)}] [priority:: high] [estimate:: 4]`, "Norwegian", "School", 6),
 	task(`- [x] Titration write-up ✅ ${formatISO(T - 1)}`, "Lab work", "School", 7),
 	task(`- [ ] Book the lab`, "Lab work", "School", 8),
 ];
@@ -187,7 +187,7 @@ function mountViews(prefix: string) {
 	put("tasks", (el) => {
 		const rows = [...demoTasks].filter((t) => !t.done).sort(priorityOrder);
 		renderTasks(el, { rows: rows as never, groups: null, total: rows.length },
-			{ view: "tasks", source: "tasks", title: "Open tasks" } as never, ctx);
+			{ view: "tasks", source: "tasks", title: "Open tasks", show: ["due", "priority", "estimate", "file"] } as never, ctx);
 	});
 
 	put("grouped", (el) => {
@@ -215,3 +215,25 @@ function mountViews(prefix: string) {
 }
 
 for (const theme of ["light", "dark"]) mountViews(theme);
+
+// --- minimal styling for the Modal/Setting stubs above -----------------
+const previewModalCss = document.createElement("style");
+previewModalCss.textContent = `
+.cleanview-preview-modal-overlay {
+	position: fixed; inset: 0; background: rgba(0,0,0,.5);
+	display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.cleanview-preview-modal-box {
+	background: var(--background-primary, #fff); color: var(--text-normal, #222);
+	border-radius: 8px; padding: 20px; min-width: 320px; max-width: 90vw;
+	box-shadow: 0 8px 30px rgba(0,0,0,.3); font-family: system-ui, sans-serif;
+}
+.cleanview-preview-modal-title { font-weight: 600; font-size: 16px; margin-bottom: 12px; }
+.cleanview-preview-setting { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 8px 0; }
+.cleanview-preview-setting-name { font-weight: 500; }
+.cleanview-preview-setting-desc { font-size: 12px; opacity: .7; }
+.cleanview-preview-setting-control input, .cleanview-preview-setting-control select { padding: 4px 6px; }
+.cleanview-preview-setting-control button { padding: 4px 10px; margin-left: 6px; cursor: pointer; }
+.cleanview-preview-setting-control button.mod-cta { background: #4a7dfc; color: #fff; border: none; border-radius: 4px; }
+`;
+document.head.appendChild(previewModalCss);

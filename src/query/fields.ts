@@ -32,6 +32,7 @@ const TASK_FIELDS: Record<string, Accessor> = {
 	created: (r) => (r as CleanViewTask).created,
 	completedOn: (r) => (r as CleanViewTask).completedOn,
 	recurrence: (r) => (r as CleanViewTask).recurrence,
+	estimate: (r) => (r as CleanViewTask).estimate,
 	tags: (r) => (r as CleanViewTask).tags,
 	path: (r) => (r as CleanViewTask).path,
 	file: (r) => (r as CleanViewTask).fileName,
