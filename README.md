@@ -8,6 +8,9 @@ It reads the task syntax you already use — both the Tasks plugin's emoji
 shorthand and Dataview's inline fields — so it drops into an existing vault
 without rewriting anything.
 
+**New here? [Read the guide](GUIDE.md)** — a click-by-click walkthrough, no
+YAML required to get started. What follows below is the technical reference.
+
 ```cleanview
 view: tasks
 title: Due today
@@ -93,15 +96,14 @@ the plugin in *Settings → Community plugins*.
 
 ## Getting started
 
-1. Put the cursor where the dashboard should go.
-2. Run **CleanView: New dashboard block** from the command palette.
-3. Pick the options from the dropdowns and press Insert.
+Run **CleanView: New dashboard block** from the command palette, pick from
+the dropdowns, press Insert. To change a block later, hover it and click the
+pencil — the same dialog reopens with your settings loaded. To add a task
+with a due date, run **CleanView: Add task**.
 
-The dialog shows the block as you build it. To change one later, hover it and
-click the pencil — the same dialog reopens with your settings loaded.
-
-Date-filtered blocks need tasks that carry dates. **CleanView: Add task** asks
-for three things — what, when, how urgent — and writes the line for you.
+That covers it for most uses. **[GUIDE.md](GUIDE.md)** walks through all of
+this with concrete examples, plus a tour of every block type and what each
+one is for.
 
 ## Block reference
 

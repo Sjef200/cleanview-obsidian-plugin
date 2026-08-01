@@ -189,6 +189,22 @@ export default class CleanViewPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "insert-text-line",
+			name: "Insert live text line",
+			editorCallback: (editor) => {
+				editor.replaceSelection(
+					[
+						"```cleanview",
+						"view: text",
+						'format: "{date} · week {week} · {open} open tasks"',
+						"```",
+						"",
+					].join("\n"),
+				);
+			},
+		});
+
+		this.addCommand({
 			id: "insert-capacity-block",
 			name: "Insert capacity check",
 			editorCallback: (editor) => {
