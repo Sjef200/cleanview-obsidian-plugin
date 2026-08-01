@@ -467,6 +467,61 @@
 	font-variant-numeric: tabular-nums;
 }
 
+/* ------------------------------------------------------------- capacity */
+
+.cleanview-capacity {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4em;
+	padding: 0.9em 1em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary-alt);
+}
+
+.cleanview-capacity-badge {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.35em;
+	font-weight: 600;
+	font-size: var(--font-ui-small);
+}
+
+.cleanview-capacity.is-good .cleanview-capacity-badge { color: var(--cleanview-good); }
+.cleanview-capacity.is-warning .cleanview-capacity-badge { color: var(--cleanview-warning-text); }
+.cleanview-capacity.is-critical .cleanview-capacity-badge { color: var(--cleanview-critical); }
+
+.cleanview-capacity-figure {
+	font-size: 2.4em;
+	font-weight: 650;
+	line-height: 1.1;
+	color: var(--text-normal);
+	font-variant-numeric: tabular-nums;
+}
+
+/* The meter's fill and unfilled track both carry the state colour, at full
+   and reduced opacity, so the bar itself reads without the badge. */
+.cleanview-capacity.is-good .cleanview-progress-bar::after { background: var(--cleanview-good); }
+.cleanview-capacity.is-warning .cleanview-progress-bar::after { background: var(--cleanview-warning); }
+.cleanview-capacity.is-critical .cleanview-progress-bar::after { background: var(--cleanview-critical); }
+
+@supports (background: color-mix(in srgb, red 50%, transparent)) {
+	.cleanview-capacity.is-good .cleanview-progress-bar { background: color-mix(in srgb, var(--cleanview-good) 18%, transparent); }
+	.cleanview-capacity.is-warning .cleanview-progress-bar { background: color-mix(in srgb, var(--cleanview-warning) 18%, transparent); }
+	.cleanview-capacity.is-critical .cleanview-progress-bar { background: color-mix(in srgb, var(--cleanview-critical) 18%, transparent); }
+}
+
+.cleanview-capacity-detail {
+	font-size: var(--font-ui-small);
+	color: var(--text-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.cleanview-capacity-warning {
+	font-size: var(--font-ui-smaller);
+	color: var(--cleanview-warning-text);
+}
+
 /* ---------------------------------------------------------------- chart */
 
 .cleanview-chart {

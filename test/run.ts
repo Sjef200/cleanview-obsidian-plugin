@@ -16,6 +16,7 @@ import type { CleanViewTask } from "../src/core/types";
 import type { Row } from "../src/query/fields";
 import { DEFAULT_STATE, buildBlock, toBuilderState, type BuilderState } from "../src/ui/block-spec";
 import { DEFAULT_TASK, buildTaskLine, dayNumToInput, hoursToInput, rewriteTaskBody, shiftInput, todayInput } from "../src/ui/task-spec";
+import { computeCapacity, normalizeBudget } from "../src/views/capacity-spec";
 
 let passed = 0;
 let failed = 0;
@@ -462,6 +463,67 @@ console.log("\nEditing a task");
 	check("detects the Dataview dialect from estimate alone",
 		edit("Notes [estimate:: 2]", "Notes", "", 2, "3"),
 		"Notes [estimate:: 3]");
+}
+
+// ---------------------------------------------------------------- capacity
+
+console.log("\nCapacity");
+{
+	const T = today();
+	const withEstimate = (hours: number | undefined): CleanViewTask =>
+		({ ...parse("- [ ] X"), estimate: hours });
+
+	{
+		// A week away, an 8-hour day committed to fixed things (16h/day free),
+		// 20 hours of estimated work against 7 × 16 = 112 available.
+		const rows = [withEstimate(12), withEstimate(8)];
+		const r = computeCapacity(T, T + 7, { sleep: 8 }, rows);
+		check("daysLeft", r.daysLeft, 7);
+		check("hoursPerDay", r.hoursPerDay, 16);
+		check("availableHours", r.availableHours, 112);
+		check("estimatedHours", r.estimatedHours, 20);
+		check("unestimatedCount", r.unestimatedCount, 0);
+		check("percent", Math.round(r.percent * 100) / 100, Math.round((20 / 112) * 10000) / 100);
+	}
+
+	// No budget at all means the whole day is free.
+	check("zero budget gives 24 hours a day", computeCapacity(T, T + 1, {}, []).hoursPerDay, 24);
+
+	// A budget summing past 24 hours cannot leave negative capacity.
+	check(
+		"an over-committed budget clamps to zero, not negative",
+		computeCapacity(T, T + 1, { sleep: 10, transport: 6, meals: 4, social: 6, leisure: 4 }, []).hoursPerDay,
+		0,
+	);
+
+	// A deadline that has already passed is zero days, not a negative count
+	// that would otherwise flip the whole calculation's sign.
+	check("a past deadline gives zero days left, not negative", computeCapacity(T, T - 5, {}, []).daysLeft, 0);
+
+	// Zero available hours with no estimated work is "nothing to do, nothing to
+	// do it in" — 0%, not a NaN from 0/0.
+	check("zero available and zero estimated is 0%, not NaN", computeCapacity(T, T, {}, []).percent, 0);
+
+	// Zero available hours with real estimated work is a genuine impossibility,
+	// not a divide-by-zero accident — Infinity is the honest answer.
+	check(
+		"zero available hours with real work is Infinity, not NaN",
+		computeCapacity(T, T, {}, [withEstimate(5)]).percent,
+		Infinity,
+	);
+
+	// Tasks with no estimate are counted separately, never treated as zero cost.
+	{
+		const rows = [withEstimate(4), withEstimate(undefined), withEstimate(undefined)];
+		const r = computeCapacity(T, T + 10, { sleep: 8 }, rows);
+		check("unestimated tasks are counted, not folded into the total", r.unestimatedCount, 2);
+		check("unestimated tasks contribute nothing to the hour total", r.estimatedHours, 4);
+	}
+
+	check("normalizeBudget keeps finite numbers", normalizeBudget({ sleep: 8, transport: "3" }), { sleep: 8, transport: 3 });
+	check("normalizeBudget drops non-numeric values", normalizeBudget({ sleep: 8, note: "not a number" }), { sleep: 8 });
+	check("normalizeBudget handles a missing budget", normalizeBudget(undefined), {});
+	check("normalizeBudget rejects a non-object", normalizeBudget("nope"), {});
 }
 
 // ------------------------------------------------------------- benchmark

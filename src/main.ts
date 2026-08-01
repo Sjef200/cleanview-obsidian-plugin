@@ -189,6 +189,31 @@ export default class CleanViewPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "insert-capacity-block",
+			name: "Insert capacity check",
+			editorCallback: (editor) => {
+				editor.replaceSelection(
+					[
+						"```cleanview",
+						"view: capacity",
+						"title: Capacity",
+						"until: today+90d",
+						"budget:",
+						"  sleep: 8",
+						"  transport: 3",
+						"  meals: 2",
+						"  social: 4",
+						"  leisure: 4",
+						"filter:",
+						"  done: false",
+						"```",
+						"",
+					].join("\n"),
+				);
+			},
+		});
+
+		this.addCommand({
 			id: "insert-chart-block",
 			name: "Insert chart",
 			editorCallback: (editor) => {

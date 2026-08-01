@@ -12,7 +12,7 @@ import type { Row, Source } from "./fields";
 import { type Predicate, compileFilter } from "./filter";
 import { type Comparator, type Group, compileSort, groupRows } from "./sort";
 
-export type ViewKind = "tasks" | "table" | "stat" | "chart" | "text" | "countdown";
+export type ViewKind = "tasks" | "table" | "stat" | "chart" | "text" | "countdown" | "capacity";
 
 export interface BlockConfig {
 	view: ViewKind;
@@ -35,6 +35,9 @@ export interface BlockConfig {
 	by?: string;
 	/** text */
 	format?: string;
+	/** capacity */
+	until?: unknown;
+	budget?: unknown;
 	[key: string]: unknown;
 }
 
@@ -47,6 +50,7 @@ const VIEW_ALIASES: Record<string, ViewKind> = {
 	chart: "chart", diagram: "chart",
 	text: "text",
 	countdown: "countdown",
+	capacity: "capacity",
 };
 
 export function parseConfig(yaml: string): BlockConfig {
@@ -65,7 +69,7 @@ export function parseConfig(yaml: string): BlockConfig {
 	const view = VIEW_ALIASES[viewName];
 	if (!view) {
 		throw new ConfigError(
-			`Unknown view "${config.view ?? ""}". Valid values: tasks, table, stat, chart, countdown, text.`,
+			`Unknown view "${config.view ?? ""}". Valid values: tasks, table, stat, chart, countdown, capacity, text.`,
 		);
 	}
 

@@ -134,6 +134,7 @@ import { renderTasks } from "../src/views/task-view";
 import { renderTable } from "../src/views/table-view";
 import { renderStat } from "../src/views/stat-view";
 import { renderText } from "../src/views/text-view";
+import { renderCapacity } from "../src/views/capacity-view";
 import { parseTaskLine } from "../src/core/task-parser";
 import { formatISO, today } from "../src/core/dates";
 import { compileSort } from "../src/query/sort";
@@ -211,6 +212,28 @@ function mountViews(prefix: string) {
 			{ view: "stat", source: "tasks", title: "Open tasks", value: "count" } as never);
 		renderStat(el, { rows: demoTasks.filter((t) => t.done) as never, groups: null, total: 1 },
 			{ view: "stat", source: "tasks", title: "Done this week", value: "count", goal: 5 } as never);
+	});
+
+	put("capacity", (el) => {
+		const budget = { sleep: 8, transport: 3, meals: 2, social: 4, leisure: 4 }; // 7h/day free
+		const onTrack = [
+			{ ...demoTasks[0], estimate: 6 }, { ...demoTasks[1], estimate: 4 },
+		];
+		const tight = [
+			{ ...demoTasks[0], estimate: 14 }, { ...demoTasks[1], estimate: 10 }, { ...demoTasks[2], estimate: undefined },
+		];
+		const over = [
+			{ ...demoTasks[0], estimate: 60 }, { ...demoTasks[1], estimate: 50 },
+		];
+		for (const [title, rows, days] of [
+			["On track", onTrack, 10], ["Tight", tight, 10], ["Over capacity", over, 10],
+		] as Array<[string, unknown[], number]>) {
+			const card = el.createDiv({ cls: "cleanview-block" });
+			card.style.minWidth = "280px";
+			card.style.flex = "1";
+			renderCapacity(card, { rows: rows as never, groups: null, total: rows.length },
+				{ view: "capacity", source: "tasks", title, until: `today+${days}d`, budget } as never);
+		}
 	});
 }
 
