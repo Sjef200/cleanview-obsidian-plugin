@@ -205,6 +205,24 @@ export default class CleanViewPlugin extends Plugin {
 		});
 
 		this.addCommand({
+			id: "insert-board-block",
+			name: "Insert board",
+			editorCallback: (editor) => {
+				editor.replaceSelection(
+					[
+						"```cleanview",
+						"view: board",
+						"title: This week's work",
+						"filter:",
+						"  done: false",
+						"```",
+						"",
+					].join("\n"),
+				);
+			},
+		});
+
+		this.addCommand({
 			id: "insert-capacity-block",
 			name: "Insert capacity check",
 			editorCallback: (editor) => {

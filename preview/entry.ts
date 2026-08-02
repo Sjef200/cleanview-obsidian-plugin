@@ -135,6 +135,7 @@ import { renderTable } from "../src/views/table-view";
 import { renderStat } from "../src/views/stat-view";
 import { renderText } from "../src/views/text-view";
 import { renderCapacity } from "../src/views/capacity-view";
+import { renderBoard } from "../src/views/board-view";
 import { parseTaskLine } from "../src/core/task-parser";
 import { formatISO, today } from "../src/core/dates";
 import { compileSort } from "../src/query/sort";
@@ -214,6 +215,22 @@ function mountViews(prefix: string) {
 			{ view: "stat", source: "tasks", title: "Done this week", value: "count", goal: 5 } as never);
 	});
 
+	put("board", (el) => {
+		const boardTasks = [
+			task(`- [ ] Overdue reading 📅 ${formatISO(T - 3)} ⏫`, "History", "School", 20),
+			task(`- [ ] Fix the lab writeup 📅 ${formatISO(T - 1)}`, "Lab work", "School", 21),
+			task(`- [ ] Read chapter 5 📅 ${formatISO(T)} 🔺 ⏱️ 2h`, "Mathematics", "School", 22),
+			task(`- [ ] Draft the outline 📅 ${formatISO(T + 4)} ⏱️ 3h`, "Norwegian", "School", 23),
+			task(`- [ ] Second draft 📅 ${formatISO(T + 9)}`, "Norwegian", "School", 24),
+			task(`- [ ] Practice exam 📅 ${formatISO(T + 10)} ⏫ ⏱️ 4h`, "Mathematics", "School", 25),
+			task(`- [ ] Read the whole syllabus 📅 ${formatISO(T + 40)}`, "History", "School", 26),
+			task(`- [ ] Book the lab`, "Lab work", "School", 27),
+			task(`- [x] Titration write-up ✅ ${formatISO(T - 1)}`, "Lab work", "School", 28),
+		];
+		renderBoard(el, { rows: boardTasks as never, groups: null, total: boardTasks.length },
+			{ view: "board", source: "tasks", title: "This week's work" } as never, ctx);
+	});
+
 	put("capacity", (el) => {
 		const budget = { sleep: 8, transport: 3, meals: 2, social: 4, leisure: 4 }; // 7h/day free
 		const onTrack = [
@@ -260,3 +277,18 @@ previewModalCss.textContent = `
 .cleanview-preview-setting-control button.mod-cta { background: #4a7dfc; color: #fff; border: none; border-radius: 4px; }
 `;
 document.head.appendChild(previewModalCss);
+
+// --- minimal styling for the Menu stub above ---------------------------
+const previewMenuCss = document.createElement("style");
+previewMenuCss.textContent = `
+.cleanview-preview-menu {
+	position: fixed; z-index: 2000;
+	background: var(--background-primary, #fff); color: var(--text-normal, #222);
+	border: 1px solid var(--background-modifier-border, #ccc);
+	border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+	font-family: system-ui, sans-serif; font-size: 13px; overflow: hidden; min-width: 140px;
+}
+.cleanview-preview-menu-item { padding: 6px 12px; cursor: pointer; }
+.cleanview-preview-menu-item:hover { background: var(--background-modifier-hover, #eee); }
+`;
+document.head.appendChild(previewMenuCss);

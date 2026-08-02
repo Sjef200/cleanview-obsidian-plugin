@@ -17,6 +17,7 @@ import type { Row } from "../src/query/fields";
 import { DEFAULT_STATE, buildBlock, toBuilderState, type BuilderState } from "../src/ui/block-spec";
 import { DEFAULT_TASK, buildTaskLine, dayNumToInput, hoursToInput, rewriteTaskBody, shiftInput, todayInput } from "../src/ui/task-spec";
 import { computeCapacity, normalizeBudget } from "../src/views/capacity-spec";
+import { COLUMNS, bucketRows, columnById } from "../src/views/board-spec";
 
 let passed = 0;
 let failed = 0;
@@ -524,6 +525,44 @@ console.log("\nCapacity");
 	check("normalizeBudget drops non-numeric values", normalizeBudget({ sleep: 8, note: "not a number" }), { sleep: 8 });
 	check("normalizeBudget handles a missing budget", normalizeBudget(undefined), {});
 	check("normalizeBudget rejects a non-object", normalizeBudget("nope"), {});
+}
+
+// -------------------------------------------------------------- board
+
+console.log("\nBoard");
+{
+	const T = today();
+	const withDue = (due: number | undefined): CleanViewTask => ({ ...parse("- [ ] X"), due });
+
+	// Boundaries: yesterday, today, the edges of each week, and just past them.
+	check("due yesterday -> overdue", COLUMNS.find((c) => c.matches(T - 1, T))?.id, "overdue");
+	check("due today -> this week", COLUMNS.find((c) => c.matches(T, T))?.id, "this-week");
+	check("due in 6 days -> this week", COLUMNS.find((c) => c.matches(T + 6, T))?.id, "this-week");
+	check("due in 7 days -> next week", COLUMNS.find((c) => c.matches(T + 7, T))?.id, "next-week");
+	check("due in 13 days -> next week", COLUMNS.find((c) => c.matches(T + 13, T))?.id, "next-week");
+	check("due in 14 days -> later", COLUMNS.find((c) => c.matches(T + 14, T))?.id, "later");
+	check("due in 90 days -> later", COLUMNS.find((c) => c.matches(T + 90, T))?.id, "later");
+	check("no due date -> no-date", COLUMNS.find((c) => c.matches(undefined, T))?.id, "no-date");
+
+	// dropDue per column, including the clearing case.
+	check("dropDue overdue", columnById("overdue").dropDue(T), T - 1);
+	check("dropDue this-week", columnById("this-week").dropDue(T), T);
+	check("dropDue next-week", columnById("next-week").dropDue(T), T + 7);
+	check("dropDue later", columnById("later").dropDue(T), T + 14);
+	check("dropDue no-date clears the date", columnById("no-date").dropDue(T), undefined);
+
+	// Every row lands in exactly one bucket — none silently dropped, none
+	// double-counted.
+	const rows = [withDue(T - 3), withDue(T), withDue(T + 6), withDue(T + 7), withDue(T + 20), withDue(undefined)];
+	const buckets = bucketRows(rows, T);
+	check("all five columns are present, even when empty", [...buckets.keys()].length, 5);
+	const total = [...buckets.values()].reduce((sum, r) => sum + r.length, 0);
+	check("every row lands in exactly one column", total, rows.length);
+	check("overdue bucket", buckets.get("overdue")?.length, 1);
+	check("this-week bucket", buckets.get("this-week")?.length, 2);
+	check("next-week bucket", buckets.get("next-week")?.length, 1);
+	check("later bucket", buckets.get("later")?.length, 1);
+	check("no-date bucket", buckets.get("no-date")?.length, 1);
 }
 
 // ------------------------------------------------------------- benchmark

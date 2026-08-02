@@ -153,8 +153,12 @@ function renderTask(
 	}
 }
 
-/** Opens the task editor and writes the result back to the source note. */
-function openTaskEditor(task: CleanViewTask, ctx: ViewContext): void {
+/**
+ * Opens the task editor and writes the result back to the source note.
+ * Exported so the board view can reuse the identical dialog rather than
+ * inventing a second one.
+ */
+export function openTaskEditor(task: CleanViewTask, ctx: ViewContext): void {
 	new TaskModal(
 		ctx.app,
 		(edited) => {

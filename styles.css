@@ -780,3 +780,127 @@
 	outline: 2px solid var(--interactive-accent);
 	outline-offset: 2px;
 }
+
+/* ----------------------------------------------------------------- board */
+
+.cleanview-board {
+	display: flex;
+	gap: 0.8em;
+	overflow-x: auto;
+	padding-bottom: 0.3em;
+}
+
+.cleanview-board-column {
+	flex: 0 0 260px;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5em;
+	padding: 0.6em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-m);
+	background: var(--background-primary-alt);
+	transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+/* The valid-drop-target highlight — the only feedback a user gets before
+   releasing, so it has to be unmistakable, not just a subtle tint. */
+.cleanview-board-column.is-drag-over {
+	background: var(--background-modifier-hover);
+	border-color: var(--interactive-accent);
+}
+
+.cleanview-board-column-head {
+	display: flex;
+	align-items: baseline;
+	gap: 0.4em;
+}
+
+.cleanview-board-column-label {
+	font-weight: 600;
+	font-size: var(--font-ui-small);
+	color: var(--text-normal);
+	flex: 1;
+}
+
+.cleanview-board-column-hours {
+	font-size: var(--font-ui-smaller);
+	color: var(--text-faint);
+	font-variant-numeric: tabular-nums;
+}
+
+.cleanview-board-cards {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4em;
+	min-height: 2em;
+}
+
+.cleanview-board-card {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 0.35em;
+	padding: 0.5em 0.55em;
+	border: 1px solid var(--background-modifier-border);
+	border-radius: var(--radius-s);
+	background: var(--background-primary);
+	cursor: grab;
+	transition: opacity 120ms ease;
+}
+
+.cleanview-board-card.is-dragging {
+	opacity: 0.4;
+}
+
+.cleanview-board-card.is-done .cleanview-task-text {
+	color: var(--text-faint);
+	text-decoration: line-through;
+}
+
+.cleanview-board-card-top {
+	display: flex;
+	align-items: flex-start;
+	gap: 0.4em;
+}
+
+.cleanview-board-card-top .cleanview-task-text {
+	flex: 1;
+	min-width: 0;
+	line-height: 1.4;
+}
+
+/* Hidden until hover on desktop — there is no hover on touch, so it stays
+   visible under .is-mobile below, matching .cleanview-edit's own rule. */
+.cleanview-board-move {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0.2em;
+	background: none;
+	border: none;
+	box-shadow: none;
+	color: var(--text-faint);
+	cursor: pointer;
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.cleanview-board-card:hover .cleanview-board-move,
+.cleanview-board-move:focus-visible {
+	opacity: 1;
+}
+
+.cleanview-board-move:hover {
+	color: var(--text-normal);
+}
+
+.is-mobile .cleanview-board-move {
+	opacity: 0.6;
+	min-width: 40px;
+	min-height: 40px;
+}
+
+.is-mobile .cleanview-board-card {
+	cursor: default;
+}

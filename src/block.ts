@@ -18,6 +18,7 @@ import { CompiledQuery, ConfigError, parseConfig } from "./query/query";
 import type { BlockConfig } from "./query/query";
 import { type ChartHandle, renderChart } from "./views/chart-view";
 import { errorState } from "./views/render-utils";
+import { renderBoard } from "./views/board-view";
 import { renderCapacity } from "./views/capacity-view";
 import { renderCountdown } from "./views/countdown-view";
 import { renderStat } from "./views/stat-view";
@@ -199,6 +200,9 @@ export class CleanViewBlock extends MarkdownRenderChild {
 					break;
 				case "capacity":
 					renderCapacity(this.containerEl, result, this.config);
+					break;
+				case "board":
+					renderBoard(this.containerEl, result, this.config, ctx);
 					break;
 				case "chart":
 					this.chart = renderChart(this.containerEl, result, this.config, ctx);

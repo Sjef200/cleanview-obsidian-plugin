@@ -1,7 +1,7 @@
 {
   "id": "cleanview",
   "name": "CleanView",
-  "version": "0.6.2",
+  "version": "0.7.0",
   "minAppVersion": "1.13.0",
   "description": "Turn the notes you already have into live dashboards: tasks, tables, countdowns and charts that update as you type. Build them from a dialog instead of a query language. Nothing leaves your device.",
   "author": "Sjef200",

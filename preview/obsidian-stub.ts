@@ -40,7 +40,65 @@ export function getAllTags(): string[] {
 }
 
 export function setIcon(el: HTMLElement, icon: string): void {
-	el.textContent = icon === "pencil" ? "✎" : icon;
+	el.textContent = icon === "pencil" ? "✎" : icon === "move" ? "⇄" : icon;
+}
+
+interface MenuItemLike {
+	setTitle(title: string): MenuItemLike;
+	setIcon(icon: string | null): MenuItemLike;
+	onClick(cb: (evt: MouseEvent | KeyboardEvent) => void): MenuItemLike;
+}
+
+/**
+ * Just enough of Obsidian's Menu to exercise the board's "Move to…" action in
+ * preview/ — a simple positioned list, dismissed on an outside click.
+ */
+export class Menu {
+	private items: Array<{ title: string; onClick: (evt: MouseEvent) => void }> = [];
+
+	addItem(cb: (item: MenuItemLike) => void): this {
+		const entry = { title: "", onClick: (() => {}) as (evt: MouseEvent) => void };
+		const item: MenuItemLike = {
+			setTitle: (title) => {
+				entry.title = title;
+				return item;
+			},
+			setIcon: () => item,
+			onClick: (fn) => {
+				entry.onClick = fn as (evt: MouseEvent) => void;
+				return item;
+			},
+		};
+		cb(item);
+		this.items.push(entry);
+		return this;
+	}
+
+	showAtMouseEvent(evt: MouseEvent): this {
+		const menuEl = document.createElement("div");
+		menuEl.className = "cleanview-preview-menu";
+		menuEl.style.left = `${evt.clientX}px`;
+		menuEl.style.top = `${evt.clientY}px`;
+		for (const entry of this.items) {
+			const row = document.createElement("div");
+			row.className = "cleanview-preview-menu-item";
+			row.textContent = entry.title;
+			row.addEventListener("click", (e) => {
+				entry.onClick(e as MouseEvent);
+				menuEl.remove();
+			});
+			menuEl.appendChild(row);
+		}
+		const dismiss = (e: MouseEvent) => {
+			if (!menuEl.contains(e.target as Node)) {
+				menuEl.remove();
+				document.removeEventListener("click", dismiss, true);
+			}
+		};
+		document.addEventListener("click", dismiss, true);
+		document.body.appendChild(menuEl);
+		return this;
+	}
 }
 
 /**
